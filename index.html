@@ -6,42 +6,62 @@
     <title>VEHICLE EXPLORER AR v2.0</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
+    <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     
     <style>
-        /* === BASE V1 STYLES === */
-        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; -webkit-tap-highlight-color: transparent; touch-action: none; }
+        /* --- CORE V1 STYLES --- */
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; background: #000; }
         a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
 
         /* Start Screen */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; z-index: 999; transition: opacity 0.5s;
+            background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none;
         }
-        .logo-wrapper { position: relative; overflow: hidden; width: 70vw; max-width: 300px; margin-bottom: 20px; }
-        .logo-image { max-width: 100%; display: block; }
+        #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .logo-wrapper {
+            position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;
+            width: 70vw; height: 70vw; max-width: 300px; max-height: 300px; margin-bottom: 20px;
+        }
+        .logo-image { max-width: 90%; max-height: 90%; object-fit: contain; display: block; opacity: 1; }
         .animate-logo { animation: fadeOut 3s ease-in-out forwards; }
+        .logo-wrapper::after {
+            content: ""; position: absolute; top: -150%; left: -150%; width: 100%; height: 400%;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.7), transparent); transform: rotate(25deg);
+        }
+        .animate-sweep::after { animation: sweep 1.2s ease-in-out forwards; }
         
-        #loading-container { width: 200px; height: 4px; background: rgba(255,255,255,0.1); margin-top: 20px; border-radius: 10px; overflow: hidden; position: relative; }
-        #loading-bar { width: 40%; height: 100%; background: #fff; position: absolute; left: -40%; animation: loadingMove 1.5s infinite ease-in-out; box-shadow: 0 0 10px #fff; }
-        
+        #loading-container {
+            width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1);
+            margin-top: 20px; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #loading-bar {
+            width: 40%; height: 100%; background: #ffffff; position: absolute; left: -40%;
+            border-radius: 10px; animation: loadingMove 1.5s infinite ease-in-out; box-shadow: 0 0 10px #fff;
+        }
+
         #start-btn {
-            font-family: 'Press Start 2P', cursive; padding: 15px; font-size: 15px; color: black; background: white;
-            border: 4px solid #555; border-radius: 15px; cursor: pointer; text-transform: uppercase;
-            box-shadow: 4px 4px 0px #888; opacity: 0; pointer-events: none; transition: opacity 0.8s; margin-top: 30px;
+            font-family: 'Press Start 2P', cursive; padding: 15px 15px; font-size: 15px; color: black;
+            background: white; border: 4px solid #555; border-radius: 15px; cursor: pointer;
+            text-transform: uppercase; box-shadow: 4px 4px 0px #888; opacity: 0; pointer-events: none;
+            transition: opacity 0.8s ease-in; position: absolute; margin-top: 30px; 
         }
         #start-btn.visible { opacity: 1; pointer-events: auto; animation: pulseBtn 1.5s infinite; }
+        #start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
 
-        /* Scanner Reticle */
+        /* Scanner UI & Marquee */
         #scanner-ui {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 60vw; height: 60vw; max-width: 320px; max-height: 320px;
-            z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+            border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s;
         }
         #scanner-ui.visible { opacity: 1; }
         .corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
@@ -49,59 +69,86 @@
         .top-right { top: -4px; right: -4px; border-left: none; border-bottom: none; }
         .bottom-left { bottom: -4px; left: -4px; border-right: none; border-top: none; }
         .bottom-right { bottom: -4px; right: -4px; border-left: none; border-top: none; }
-        .scan-line { position: absolute; width: 100%; height: 8px; background: white; box-shadow: 0 0 20px white; animation: scanMove 2s infinite ease-in-out; }
+        .scan-line { position: absolute; width: 100%; height: 8px; background: white; top: 0; left: 0; box-shadow: 0 0 20px white; animation: scanMove 2.0s ease-in-out infinite; }
 
-        /* Marquee */
         #overlay { 
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px;
-            padding: 12px 0; color: white; font-size: 18px; font-family: Arial, sans-serif; 
-            background: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 10; opacity: 0; overflow: hidden; white-space: nowrap; pointer-events: none; transition: opacity 0.5s;
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            width: 80%; max-width: 400px; padding: 12px 0; color: white; font-size: 18px; font-family: Arial, sans-serif; 
+            text-shadow: 2px 2px 4px black; background: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 10; 
+            transition: opacity 0.5s; pointer-events: none; opacity: 0; overflow: hidden; white-space: nowrap;
         }
         #overlay.visible { opacity: 1; }
         .marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 6.4s linear infinite; }
 
-        /* UI Sidebar Buttons */
-        .ui-container { position: absolute; right: 15px; top: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 50; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
-        .ui-container.visible { opacity: 1; pointer-events: auto; }
+        /* Side Buttons (V1 Matches) */
         .btn-ui {
-            width: 40px; height: 40px; background: rgba(0, 0, 0, 0.6); color: white; border: 2px solid white;
-            border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer;
+            position: absolute; width: 36px; height: 36px; right: 15px;
+            background: rgba(0, 0, 0, 0.4); color: white; border: 2px solid white;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 50; transition: opacity 0.5s; opacity: 0; pointer-events: none; overflow: hidden;
         }
-        .ui-icon { width: 60%; height: 60%; object-fit: contain; filter: invert(1); }
+        .btn-ui.visible { opacity: 1; pointer-events: auto !important; }
+        .ui-icon { width: 70%; height: 70%; object-fit: contain; }
+        #info-btn { top: 15px; } #share-btn { top: 60px; } #cta-btn { top: 105px; } #help-btn { top: 150px; }
+        #toggle-ui-btn { top: 195px; background: rgba(0, 191, 255, 0.4); } /* Hide UI toggle */
 
-        /* Perspective & Un-anchor Toggles (Top Left) */
-        .view-toggles { position: absolute; left: 15px; top: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 50; display: none; }
-        .view-toggles.active { display: flex; }
+        /* Messages */
+        .msg-box { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 85%; max-width: 400px; padding: 25px; text-align: center; color: white; background: rgba(0, 0, 0, 0.9); 
+            border-radius: 15px; border: 2px solid white; z-index: 60; transition: opacity 0.5s; opacity: 0; pointer-events: none; line-height: 1.6;
+        }
+        .msg-box.visible { opacity: 1; pointer-events: auto; }
+        .normal-font { font-family: Arial, sans-serif; font-size: 17px; }
 
-        /* Launch Sequence UI */
+        /* --- V2.0 SIMULATION SEQUENCE STYLES --- */
         #launch-btn {
-            position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
-            font-family: 'Press Start 2P', cursive; padding: 15px; background: #ff003c; color: white;
-            border: 2px solid white; border-radius: 10px; z-index: 60; display: none; cursor: pointer;
-            box-shadow: 0 0 15px rgba(255,0,60,0.8);
+            position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+            font-family: 'Press Start 2P', cursive; padding: 15px 20px; font-size: 12px; color: white;
+            background: #ff0000; border: 3px solid white; border-radius: 10px; cursor: pointer;
+            z-index: 20; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            animation: pulseBtn 1s infinite;
         }
-        #countdown-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); color: #00BFFF; font-family: 'Press Start 2P', cursive;
-            display: flex; justify-content: center; align-items: center; text-align: center;
-            font-size: 24px; z-index: 80; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
+        #launch-btn.visible { opacity: 1; pointer-events: auto; }
 
-        /* Simulation Controls (NippleJS) */
-        #control-zone { position: absolute; bottom: 0; left: 0; width: 100%; height: 40%; z-index: 40; display: none; pointer-events: none; }
+        #sequence-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60vw; height: 60vw; max-width: 320px; max-height: 320px;
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            font-family: 'Press Start 2P', cursive; color: #00ffcc; text-shadow: 2px 2px 5px #000;
+            z-index: 25; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+        }
+        #sequence-overlay.visible { opacity: 1; }
         
-        /* Easter Egg / Glitch */
-        #easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; display: none; pointer-events: none; }
+        .sys-init { font-size: 10px; line-height: 2; animation: flashText 0.5s infinite; }
+        .countdown { font-size: 60px; color: #fff; display: none; }
+        
+        /* Vehicle Controls (Placeholder) */
+        #vehicle-controls {
+            position: absolute; bottom: 20px; left: 0; width: 100%; height: 120px;
+            z-index: 15; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+        }
+        #vehicle-controls.visible { opacity: 1; pointer-events: auto; }
+
+        /* Easter Egg */
+        #easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; pointer-events: none; display: none; opacity: 1; }
         .glitch-active { animation: glitchShake 0.12s infinite; }
 
         /* Animations */
+        @keyframes sweep { 100% { top: 100%; left: 100%; } }
+        @keyframes fadeOut { 0%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.95); } }
         @keyframes loadingMove { 0% { left: -40%; } 50% { left: 100%; } 100% { left: -40%; } }
+        @keyframes pulseBtn { 0% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, 0) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translate(-50%, 0) scale(1); } }
         @keyframes scanMove { 0%, 100% { top: 5%; opacity: 0.3; } 50% { top: 95%; opacity: 1; } }
-        @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } }
         @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-        @keyframes glitchShake { 
-            0%, 100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1.02); filter: hue-rotate(0deg); }
-            50% { transform: translate(-50%, -50%) translate(-5px, -5px) scale(0.98); filter: hue-rotate(90deg) invert(0.2); }
+        @keyframes flashText { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes glitchShake {
+            0% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1.02); filter: hue-rotate(0deg); }
+            20% { transform: translate(-50%, -50%) translate(-5px, -5px) scale(0.98); filter: hue-rotate(90deg) invert(0.2); }
+            40% { transform: translate(-50%, -50%) translate(-8px, 8px) scale(1.05); filter: hue-rotate(-90deg); }
+            60% { transform: translate(-50%, -50%) translate(8px, -5px) scale(0.95); filter: invert(0.5); }
+            80% { transform: translate(-50%, -50%) translate(-3px, -8px) scale(1.02); filter: hue-rotate(180deg); }
+            100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1); filter: hue-rotate(0deg); }
         }
     </style>
 </head>
@@ -122,316 +169,325 @@
         <div class="corner bottom-left"></div><div class="corner bottom-right"></div>
         <div class="scan-line"></div>
     </div>
-
-    <div id="overlay"><span class="marquee-text">Point camera at the hangar design to deploy vehicle!</span></div>
+    
+    <div id="sequence-overlay">
+        <span class="sys-init" id="sys-init-text">SYSTEM INITIALISING<br>.....</span>
+        <span class="countdown" id="countdown-text">3</span>
+    </div>
 
     <button id="launch-btn">LAUNCH</button>
-    <div id="countdown-overlay"><span id="countdown-text">SYSTEM INITIALIZING.....</span></div>
 
-    <div class="ui-container" id="main-ui">
-        <div id="toggle-ui-btn" class="btn-ui" style="border-color: #00BFFF;">👁️</div> <div id="info-btn" class="btn-ui"><img src="assets/ui/icons/infoicon.png" class="ui-icon" alt="i"></div>
-        <div id="share-btn" class="btn-ui"><img src="assets/ui/icons/shareicon.png" class="ui-icon" alt="s"></div>
-        <div id="store-btn" class="btn-ui"><img src="assets/ui/icons/storeicon.png" class="ui-icon" alt="$"></div>
-        <div id="help-btn" class="btn-ui"><img src="assets/ui/icons/helpicon.png" class="ui-icon" alt="?"></div>
+    <div id="overlay"><span class="marquee-text">Point camera at the SCANFREAK design to start simulation!</span></div>
+
+    <div id="info-btn" class="btn-ui"><img src="assets/ui/icons/infoicon.png" class="ui-icon" onerror="this.src=''"></div>
+    <div id="share-btn" class="btn-ui"><img src="assets/ui/icons/shareicon.png" class="ui-icon" onerror="this.src=''"></div>
+    <div id="cta-btn" class="btn-ui"><img src="assets/ui/icons/storeicon.png" class="ui-icon" onerror="this.src=''"></div>
+    <div id="help-btn" class="btn-ui"><img src="assets/ui/icons/helpicon.png" class="ui-icon" onerror="this.src=''"></div>
+    <div id="toggle-ui-btn" class="btn-ui" style="font-family: 'Press Start 2P'; font-size: 8px;">UI</div>
+
+    <div id="help-message" class="msg-box normal-font">Scanner not loading? Pause your VPN, Adblocker or use link above in a default browser like Chrome or Safari.</div>
+    <div id="info-message" class="msg-box normal-font">
+        Welcome Freaks<br>
+        POINT SCAN DISCOVER!<br>
+        Scan your merch &<br>
+        discover a new world.<br>
+        Most freaks just Scan<br>
+        but some... Tap deeper<br>
+        into reality.<br>
+        -. .. -. .  - .. -- . ...
     </div>
 
-    <div class="view-toggles" id="view-toggles">
-        <div id="unanchor-btn" class="btn-ui" style="background: #333; font-size:10px; text-align:center;">FULL<br>SCRN</div>
-        <div id="perspective-btn" class="btn-ui" style="background: #333; font-size:10px; text-align:center;">1ST<br>PRSN</div>
-    </div>
-
-    <div id="control-zone"></div>
+    <div id="vehicle-controls">
+        </div>
 
     <a-scene id="ar-scene"
-        mindar-image="imageTargetSrc: descriptors/collection02/collection02.mind; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.001;" 
-        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights: true" 
+        mindar-image="imageTargetSrc: descriptors/collection02/collection02.mind; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 5; uiScanning: no" 
+        color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights: true, antialias: false, alpha: true" 
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
 
         <a-assets>
-            <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
-            <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
-            <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
-            <audio id="sfx-btn" src="assets/sfx/info.mp3" preload="auto"></audio> <img id="cockpit-sky" src="assets/vehicles/spacefighter01_int.jpg">
+            <audio id="sfx-start" src="assets/ui/sfx/start.mp3" preload="auto"></audio>
+            <audio id="sfx-startup" src="assets/ui/sfx/startup.mp3" preload="auto"></audio>
+            <audio id="sfx-help" src="assets/ui/sfx/help.mp3" preload="auto"></audio>
+            <audio id="sfx-store" src="assets/ui/sfx/store.mp3" preload="auto"></audio>
+            <audio id="sfx-share" src="assets/ui/sfx/share.mp3" preload="auto"></audio>
+            <audio id="sfx-info" src="assets/ui/sfx/info.mp3" preload="auto"></audio>
+            <audio id="sfx-matrix" src="assets/ui/sfx/matrix.mp3" preload="auto"></audio>
         </a-assets>
 
-        <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false"></a-camera>
-        
-        <a-sky id="world-sphere" src="#cockpit-sky" visible="false" rotation="0 -90 0"></a-sky>
-
         <script>
-            // Example map for logic hooks
-            const vehicles = ["spacefighter01", "submarine02", "helicopter03", "jetfighter04", "hovercraft05", "fireengine06", "motorbike07", "excavator08", "dumpertruck09", "monstertruck10", "giantrobot11", "snowmobile12"];
-            
             for(let i=0; i<24; i++) {
-                const vName = vehicles[i % 12];
                 document.write(`
-                    <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}" data-vehicle="${vName}">
-                        <a-plane class="ext-portal" width="1" height="1" position="0 0 0" material="color: #444; shader: flat;" text="value: ${vName} EXT; align: center;"></a-plane>
-                    </a-entity>
-                `);
+                <a-entity mindar-image-target="targetIndex: ${i}">
+                    <a-plane class="portal-plane" visible="false" width="1" height="1" position="0 0 0.05" material="shader: flat; side: double; transparent: true"></a-plane>
+                </a-entity>`);
             }
         </script>
+
+        <a-sky id="world-sphere" radius="10" visible="false"></a-sky>
+        
+        <a-camera id="main-camera" position="0 0 0" look-controls="enabled: false"></a-camera>
     </a-scene>
 
     <script>
-        // --- Core Variables ---
-        let isStarted = false;
-        let activeTargetIndex = null;
-        let isSimulating = false; // True after Launch Sequence
-        let isUnanchored = false;
-        let isFirstPerson = false;
+        // --- DATA & DOM ---
+        const VEHICLE_NAMES = ["spacefighter01", "submarine02", "helicopter03", "jetfighter04", "hovercraft05", "fireengine06", "motorbike07", "excavator08", "dumpertruck09", "monstertruck10", "giantrobot11", "snowmobile12"];
         
-        let easterEggTaps = [];
-        let isEasterEggRunning = false;
-        
-        let joysticks = null; // Holds NippleJS instance
-
-        // --- DOM Elements ---
         const sceneEl = document.querySelector('a-scene');
-        const mainCamera = document.getElementById('main-camera');
-        const worldSphere = document.getElementById('world-sphere');
+        const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
+        const scannerUi = document.getElementById('scanner-ui');
+        const overlay = document.getElementById('overlay');
         const launchBtn = document.getElementById('launch-btn');
-        const countdownOverlay = document.getElementById('countdown-overlay');
-        const countdownText = document.getElementById('countdown-text');
-        const controlZone = document.getElementById('control-zone');
-        const mainUi = document.getElementById('main-ui');
-        const viewToggles = document.getElementById('view-toggles');
+        const sequenceOverlay = document.getElementById('sequence-overlay');
+        const vehicleControls = document.getElementById('vehicle-controls');
         
-        // SFX
-        const sfxStart = document.getElementById('sfx-start');
-        const sfxStartup = document.getElementById('sfx-startup');
-        const sfxMatrix = document.getElementById('sfx-matrix');
-        const sfxBtn = document.getElementById('sfx-btn');
+        const sideBtns = [document.getElementById('help-btn'), document.getElementById('cta-btn'), document.getElementById('share-btn'), document.getElementById('info-btn'), document.getElementById('toggle-ui-btn')];
+        
+        let isStarted = false;
+        let isSimulationActive = false;
+        let isUnanchored = false;
+        let activeTargetIndex = null;
+        let activePlane = null;
+        let easterEggTaps = [];
+        let mediaPool = {}; // Stores the _ext videos/images
 
         const triggerHaptic = () => { if (navigator.vibrate) navigator.vibrate(50); };
-        const playBtnSound = () => { sfxBtn.currentTime = 0; sfxBtn.play(); };
+        const playSfx = (id) => { const audio = document.getElementById(id); if(audio) { audio.currentTime = 0; audio.play(); }};
 
-        // --- Boot Sequence (Matches V1) ---
+        // --- MESSAGE & V1 LOGIC ---
+        let msgTimeout;
+        const showMessage = (el) => {
+            const isCurrentlyVisible = el.classList.contains('visible');
+            document.querySelectorAll('.msg-box').forEach(m => m.classList.remove('visible'));
+            if (!isCurrentlyVisible) {
+                el.classList.add('visible');
+                clearTimeout(msgTimeout);
+                msgTimeout = setTimeout(() => el.classList.remove('visible'), 9000);
+            }
+        };
+
+        // Setup Buttons (Matching V1 exactly)
+        document.getElementById('help-btn').addEventListener('click', () => { triggerHaptic(); playSfx('sfx-help'); showMessage(document.getElementById('help-message')); });
+        document.getElementById('info-btn').addEventListener('click', () => { triggerHaptic(); playSfx('sfx-info'); showMessage(document.getElementById('info-message')); });
+        document.getElementById('cta-btn').addEventListener('click', (e) => { e.preventDefault(); triggerHaptic(); playSfx('sfx-store'); setTimeout(() => { window.open('https://scanfreak.myshopify.com', '_blank'); }, 150); });
+        
+        document.getElementById('share-btn').addEventListener('click', async (e) => {
+            e.preventDefault(); e.stopPropagation(); triggerHaptic(); playSfx('sfx-share');
+            const vehicle = activeTargetIndex !== null ? VEHICLE_NAMES[activeTargetIndex % 12] : "spacefighter01";
+            const shareText = "Got my hands on some wild merch. I just launched a 3D Simulation from my shirt! 🚀";
+            const shareUrl = "https://scanfreak.myshopify.com/";
+            try {
+                const response = await fetch(`assets/vehicles/${vehicle}_share.png`);
+                const blob = await response.blob();
+                const file = new File([blob], `${vehicle}.png`, { type: blob.type });
+                if (navigator.share) await navigator.share({ title: 'VEHICLE EXPLORER AR', text: shareText + " " + shareUrl, files: [file] });
+            } catch (err) { navigator.clipboard.writeText(shareText + " " + shareUrl).then(() => alert("Link copied!")); }
+        });
+
+        document.getElementById('toggle-ui-btn').addEventListener('click', () => {
+            triggerHaptic();
+            sideBtns.forEach(btn => { if(btn.id !== 'toggle-ui-btn') btn.style.display = btn.style.display === 'none' ? 'flex' : 'none'; });
+        });
+
+        // --- BOOT SEQUENCE ---
         sceneEl.addEventListener("arReady", () => {
-            document.getElementById('loading-bar').style.width = '100%';
-            setTimeout(() => {
-                document.getElementById('loading-container').style.visibility = 'hidden';
-                document.getElementById('main-logo').classList.add('animate-logo');
-                startBtn.classList.add('visible');
-            }, 1000);
+            document.getElementById('loading-container').style.visibility = 'hidden'; 
+            document.getElementById('logo-container').classList.add('animate-sweep');
+            document.getElementById('main-logo').classList.add('animate-logo');
+            setTimeout(() => { startBtn.classList.add('visible'); }, 3000);
+            
+            // Preload Generative Assets
+            VEHICLE_NAMES.forEach((name, idx) => {
+                const vid = document.createElement('video');
+                vid.src = `assets/vehicles/${name}_ext.mp4`; // The AI Portal Video
+                vid.loop = true; vid.muted = true; vid.playsInline = true;
+                mediaPool[idx] = vid; mediaPool[idx+12] = vid; // Map for mirrors
+            });
         });
 
         startBtn.addEventListener('click', () => {
-            triggerHaptic(); sfxStart.play();
-            setTimeout(() => sfxStartup.play(), 1500);
-            document.getElementById('start-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('start-screen').style.display = 'none', 500);
-            
-            document.getElementById('scanner-ui').classList.add('visible');
-            document.getElementById('overlay').classList.add('visible');
-            mainUi.classList.add('visible');
-            
+            triggerHaptic(); playSfx('sfx-start');
+            setTimeout(() => playSfx('sfx-startup'), 2000);
+            startScreen.classList.add('hidden');
+            overlay.classList.add('visible'); scannerUi.classList.add('visible');
+            sideBtns.forEach(btn => btn.classList.add('visible'));
             isStarted = true;
             
-            // This initiates camera permissions and AR tracking
-            sceneEl.systems['mindar-image-system'].start();
+            // Wake up Device Orientation if needed
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().catch(console.error);
+            }
         });
 
-        // --- Target Tracking Logic ---
-        document.querySelectorAll('[mindar-image-target]').forEach((target, index) => {
+        // --- TRACKING & LAUNCH ---
+        document.querySelectorAll('[mindar-image-target]').forEach((target, i) => {
             target.addEventListener('targetFound', () => {
-                if (!isStarted) return;
-                activeTargetIndex = index;
+                if (!isStarted || isSimulationActive) return;
                 triggerHaptic();
+                activeTargetIndex = i;
+                activePlane = target.querySelector('.portal-plane');
                 
-                // Hide scanner, show Launch (if not already simulating)
-                document.getElementById('scanner-ui').classList.remove('visible');
-                document.getElementById('overlay').classList.remove('visible');
-                
-                if (!isSimulating) {
-                    launchBtn.style.display = 'block';
+                // Show Parallax Portal
+                if(mediaPool[i]) {
+                    activePlane.setAttribute('material', {src: mediaPool[i]});
+                    activePlane.setAttribute('visible', true);
+                    mediaPool[i].play().catch(e=>console.log(e));
                 }
+                
+                scannerUi.classList.remove('visible');
+                overlay.classList.remove('visible');
+                launchBtn.classList.add('visible');
             });
 
             target.addEventListener('targetLost', () => {
-                if (isUnanchored) return; // Ignore target loss if we are unanchored
+                if (isSimulationActive && isUnanchored) return; // Ignore tracking loss if in full-screen sim
                 
-                activeTargetIndex = null;
-                if (!isSimulating) launchBtn.style.display = 'none';
+                if(mediaPool[i]) mediaPool[i].pause();
+                activePlane.setAttribute('visible', false);
+                launchBtn.classList.remove('visible');
                 
-                // If we lose target and aren't simulating/unanchored, return to scanner
-                if (!isUnanchored) {
-                    document.getElementById('scanner-ui').classList.add('visible');
+                if(!isSimulationActive) {
+                    activeTargetIndex = null;
+                    scannerUi.classList.add('visible');
+                    overlay.classList.add('visible');
                 }
             });
         });
 
-        // --- LAUNCH SEQUENCE (The 3-2-1 Transition) ---
+        // The Launch Sequence
         launchBtn.addEventListener('click', () => {
-            triggerHaptic(); playBtnSound();
-            launchBtn.style.display = 'none';
-            isSimulating = true;
-            
-            // 1. Simulate 3-Second 180° Rotation (We use the overlay text to mask the transition)
-            countdownOverlay.style.opacity = '1';
-            countdownText.innerText = "SYSTEM INITIALIZING.....";
-            
-            // In a full build, this is where you trigger `video.play()` on the 3rd person asset
-            
-            // 2. The Countdown
-            setTimeout(() => { countdownText.innerText = "3"; triggerHaptic(); }, 3000);
-            setTimeout(() => { countdownText.innerText = "2"; triggerHaptic(); }, 4000);
-            setTimeout(() => { countdownText.innerText = "1"; triggerHaptic(); }, 5000);
-            
-            // 3. Deploy Controls
+            if(!activePlane) return;
+            triggerHaptic();
+            launchBtn.classList.remove('visible');
+            sideBtns.forEach(btn => btn.classList.remove('visible')); // Hide UI during sequence
+
+            // 1. Trigger 3-Second 180 Rotation Animation
+            activePlane.setAttribute('animation', 'property: rotation; to: 0 180 0; dur: 3000; easing: linear');
+
+            // 2. Show System Initializing
+            sequenceOverlay.classList.add('visible');
+            document.getElementById('sys-init-text').style.display = 'block';
+            document.getElementById('countdown-text').style.display = 'none';
+
+            // 3. Countdown Sequence
             setTimeout(() => {
-                countdownOverlay.style.opacity = '0';
-                controlZone.style.display = 'block';
-                controlZone.style.pointerEvents = 'auto';
-                viewToggles.classList.add('active');
+                document.getElementById('sys-init-text').style.display = 'none';
+                const countdownEl = document.getElementById('countdown-text');
+                countdownEl.style.display = 'block';
                 
-                initJoysticks();
-            }, 6000);
+                let count = 3;
+                countdownEl.innerText = count; triggerHaptic();
+                
+                const countInterval = setInterval(() => {
+                    count--;
+                    if(count > 0) {
+                        countdownEl.innerText = count; triggerHaptic();
+                    } else {
+                        clearInterval(countInterval);
+                        sequenceOverlay.classList.remove('visible');
+                        finalizeLaunch();
+                    }
+                }, 1000);
+            }, 3000);
         });
 
-        // --- NippleJS Control Setup (ISO / Arcade Logic) ---
-        function initJoysticks() {
-            if (joysticks) joysticks.destroy(); // clear existing
+        function finalizeLaunch() {
+            isSimulationActive = true;
+            vehicleControls.classList.add('visible'); // Show Joysticks/UI
+            sideBtns.forEach(btn => btn.classList.add('visible')); // Restore UI
             
-            // Checking if current vehicle is the Excavator for ISO controls
-            const currentVehicle = document.getElementById(`target-${activeTargetIndex}`).getAttribute('data-vehicle');
-            
-            const isExcavator = currentVehicle === "excavator08";
-            
-            joysticks = nipplejs.create({
-                zone: controlZone,
-                mode: 'dynamic', // Appears where user touches
-                multitouch: true, // Allow dual joysticks
-                maxNumberOfNipples: isExcavator ? 2 : 1, // Dual for excavator, Single for others (plus UI buttons ideally)
-                color: '#00BFFF'
-            });
-
-            joysticks.on('move', (evt, data) => {
-                // Here is where you map data.vector.x and data.vector.y 
-                // to generative Sprite/Video frame updates.
-                // console.log("Driving data:", data.vector);
-            });
+            // Check orientation to see if we should auto-unanchor
+            handleOrientationChange();
         }
 
-        // --- Orientation & Perspective (Un-anchoring) Logic ---
-        function checkOrientation() {
-            if (!isSimulating) return; // Only apply un-anchor logic after launch
-            
+        // --- UNANCHORING & 1ST PERSON LOGIC ---
+        const handleOrientationChange = () => {
+            if (!isSimulationActive) return;
+
             const isLandscape = window.innerWidth > window.innerHeight;
-            if (isLandscape && !isUnanchored) {
-                toggleUnanchor(true);
-            }
-        }
-        window.addEventListener('resize', checkOrientation);
-
-        // Toggle Un-anchor button
-        document.getElementById('unanchor-btn').addEventListener('click', () => {
-            playBtnSound(); triggerHaptic();
-            toggleUnanchor(!isUnanchored);
-        });
-
-        function toggleUnanchor(forceState) {
-            isUnanchored = forceState;
-            const btn = document.getElementById('unanchor-btn');
             
-            if (isUnanchored) {
-                btn.style.background = "#00BFFF";
-                // Lock the AR view to the screen (Unanchored)
-                // Note: Realistically, you overlay an HTML <video> here, but for A-Frame we can stop MindAR processing.
-                sceneEl.systems['mindar-image-system'].pause();
-            } else {
-                btn.style.background = "#333";
-                // Resume normal AR tracking
-                sceneEl.systems['mindar-image-system'].unpause();
-                // Ensure 1st person is off
-                if (isFirstPerson) toggleFirstPerson(false); 
-            }
-        }
-
-        // Toggle 1st Person (World Model / Gyro)
-        document.getElementById('perspective-btn').addEventListener('click', () => {
-            playBtnSound(); triggerHaptic();
-            // Force unanchor if going to 1st person
-            if (!isUnanchored) toggleUnanchor(true);
-            toggleFirstPerson(!isFirstPerson);
-        });
-
-        function toggleFirstPerson(state) {
-            isFirstPerson = state;
-            const btn = document.getElementById('perspective-btn');
-            
-            if (isFirstPerson) {
-                btn.style.background = "#ff003c";
-                // Enable Gyro Look Controls
-                mainCamera.setAttribute('look-controls', 'enabled: true');
-                // Show the internal 360 generated image
-                worldSphere.setAttribute('visible', 'true');
-            } else {
-                btn.style.background = "#333";
-                // Disable Gyro Look Controls
-                mainCamera.setAttribute('look-controls', 'enabled: false');
-                mainCamera.setAttribute('rotation', '0 0 0'); // reset
-                // Hide internal image
-                worldSphere.setAttribute('visible', 'false');
-            }
-        }
-
-        // --- UI Sidebar Actions ---
-        document.getElementById('toggle-ui-btn').addEventListener('click', () => {
-            playBtnSound();
-            // Hide the rest of the buttons
-            ['info-btn', 'share-btn', 'store-btn', 'help-btn'].forEach(id => {
-                const el = document.getElementById(id);
-                el.style.display = el.style.display === 'none' ? 'flex' : 'none';
-            });
-        });
-        
-        document.getElementById('store-btn').addEventListener('click', () => {
-            playBtnSound(); window.open('https://scanfreak.myshopify.com', '_blank');
-        });
-
-        document.getElementById('share-btn').addEventListener('click', async () => {
-            playBtnSound();
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: 'Vehicle Explorer v2.0', text: 'Check out my simulation! 🚀', url: 'https://scanfreak.myshopify.com' });
-                } catch(e) { console.log(e); }
-            }
-        });
-
-        // --- Easter Egg (Matrix Glitch from V1) ---
-        window.addEventListener('pointerdown', (e) => {
-            if (!isStarted || isEasterEggRunning) return;
-            const cx = window.innerWidth / 2;
-            const cy = window.innerHeight / 2;
-            // Center tap detection zone
-            if (Math.abs(e.clientX - cx) <= 100 && Math.abs(e.clientY - cy) <= 100) {
-                const now = Date.now();
-                easterEggTaps.push(now);
-                easterEggTaps = easterEggTaps.filter(t => now - t <= 3000);
-                if (easterEggTaps.length >= 9) {
-                    easterEggTaps = [];
-                    triggerEasterEgg();
+            if (isLandscape) {
+                // AUTO UNANCHOR -> FULL SCREEN 3RD PERSON
+                isUnanchored = true;
+                
+                // Stop AR Tracking to save performance & detach from T-shirt
+                sceneEl.systems['mindar-image-system'].stop();
+                
+                // Move camera back to view full world model
+                const cam = document.getElementById('main-camera');
+                cam.setAttribute('position', '0 0 5');
+                cam.setAttribute('look-controls', 'enabled: false');
+                
+                // Keep the active plane visible but centered
+                if(activePlane) {
+                    activePlane.object3D.position.set(0, 0, 0);
+                    activePlane.object3D.rotation.set(0, 0, 0);
                 }
+                
+                vehicleControls.classList.add('visible');
+            } else {
+                // PORTRAIT -> Check if we want to stay unanchored or return
+                // Default: Stay unanchored in portrait if user previously launched
+                // Can be hooked to a toggle button for "1st Person Mode"
             }
-        });
+        };
 
-        function triggerEasterEgg() {
+        window.addEventListener('resize', handleOrientationChange);
+
+        // --- EASTER EGG (EXACT MATCH V1) ---
+        let isEasterEggRunning = false;
+        const triggerEasterEgg = () => {
             isEasterEggRunning = true;
+            const matrixAudio = document.getElementById('sfx-matrix');
             const eggImg = document.getElementById('easter-egg-img');
-            sfxMatrix.currentTime = 0; sfxMatrix.play();
             
-            eggImg.style.display = 'block';
+            matrixAudio.currentTime = 0; matrixAudio.play();
+            eggImg.style.display = 'none'; eggImg.style.opacity = '1';
+            eggImg.style.transition = 'none'; eggImg.style.pointerEvents = 'auto';
+            eggImg.classList.remove('glitch-active');
             
-            setTimeout(() => { eggImg.classList.add('glitch-active'); triggerHaptic(); }, 2000);
+            setTimeout(() => { if(isEasterEggRunning) eggImg.style.display = 'block'; }, 5000);
+            
+            setTimeout(() => { 
+                if(isEasterEggRunning) {
+                    eggImg.classList.add('glitch-active');
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+                }
+            }, 12000);
             
             setTimeout(() => {
-                eggImg.style.display = 'none';
-                eggImg.classList.remove('glitch-active');
-                isEasterEggRunning = false;
-            }, 5000);
-        }
+                if(isEasterEggRunning) {
+                    eggImg.style.transition = 'opacity 4s ease-out';
+                    eggImg.style.opacity = '0';
+                    eggImg.style.pointerEvents = 'none'; 
+                }
+            }, 22000);
+            
+            setTimeout(() => {
+                eggImg.style.display = 'none'; eggImg.classList.remove('glitch-active');
+                isEasterEggRunning = false; easterEggTaps = [];
+                if (isStarted && activeTargetIndex === null) {
+                    scannerUi.classList.add('visible'); overlay.classList.add('visible');
+                    sideBtns.forEach(btn => btn.classList.add('visible'));
+                }
+            }, 26000);
+        };
+
+        const handleCenterTap = (clientX, clientY) => {
+            if (!isStarted || isEasterEggRunning) return;
+            const cx = window.innerWidth / 2; const cy = window.innerHeight / 2;
+            const halfScannerWidth = window.innerWidth * 0.3; // 30vw
+            
+            if (Math.abs(clientX - cx) <= halfScannerWidth && Math.abs(clientY - cy) <= halfScannerWidth) {
+                const now = Date.now(); easterEggTaps.push(now);
+                easterEggTaps = easterEggTaps.filter(t => now - t <= 3000);
+                if (easterEggTaps.length >= 9) { easterEggTaps = []; triggerEasterEgg(); }
+            }
+        };
+
+        window.addEventListener('pointerdown', (e) => { if (e.isPrimary && e.button === 0) handleCenterTap(e.clientX, e.clientY); });
+
     </script>
 </body>
 </html>
