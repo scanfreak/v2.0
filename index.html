@@ -18,32 +18,101 @@
     <script>
         AFRAME.registerComponent('hider-material', {
             init: function () {
-                this.el.addEventListener('model-loaded', () => {
-                    const mesh = this.el.getObject3D('mesh');
-                    if (mesh) {
-                        mesh.material.colorWrite = false;
-                        mesh.renderOrder = 0; // Forces hider planes to render before the parallax layers
-                    }
-                });
-                // Fallback for simple primitives
                 const mesh = this.el.getObject3D('mesh');
                 if (mesh) {
                     mesh.material.colorWrite = false;
                     mesh.renderOrder = 0;
                 }
+                this.el.addEventListener('model-loaded', () => {
+                    const loadedMesh = this.el.getObject3D('mesh');
+                    if (loadedMesh) {
+                        loadedMesh.material.colorWrite = false;
+                        loadedMesh.renderOrder = 0; 
+                    }
+                });
             }
         });
     </script>
     
     <style>
-        /* (PASTE YOUR EXACT CSS FROM V1.0 HERE - Lines 13 through 244) */
-        /* I am omitting the 200 lines of CSS here for brevity, but you must keep your exact v1.0 CSS block */
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
+        a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
+
+        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
+        #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .logo-wrapper { position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 70vw; height: 70vw; max-width: 300px; max-height: 300px; margin-bottom: 20px; }
+        .logo-image { max-width: 90%; max-height: 90%; object-fit: contain; display: block; opacity: 1; }
+        .animate-logo { animation: fadeOut 3s ease-in-out forwards; }
+        .logo-wrapper::after { content: ""; position: absolute; top: -150%; left: -150%; width: 100%; height: 400%; background: linear-gradient(135deg, transparent, rgba(255,255,255,0.7), transparent); transform: rotate(25deg); }
+        .animate-sweep::after { animation: sweep 1.2s ease-in-out forwards; }
+        
+        @keyframes sweep { 100% { top: 100%; left: 100%; } }
+        @keyframes fadeOut { 0%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.95); } }
+
+        #loading-container { width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1); margin-top: 20px; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.2); }
+        #loading-bar { width: 40%; height: 100%; background: #ffffff; position: absolute; left: -40%; border-radius: 10px; animation: loadingMove 1.5s infinite ease-in-out; box-shadow: 0 0 10px #fff; }
+        
+        @keyframes loadingMove { 0% { left: -40%; } 50% { left: 100%; } 100% { left: -40%; } }
+
+        #start-btn { font-family: 'Press Start 2P', cursive; padding: 15px 15px; font-size: 15px; color: black; background: white; border: 4px solid #555; border-radius: 15px; cursor: pointer; text-transform: uppercase; box-shadow: 4px 4px 0px #888; opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in; position: absolute; margin-top: 30px; }
+        #start-btn.visible { opacity: 1; pointer-events: auto; animation: pulseBtn 1.5s infinite; }
+        
+        @keyframes pulseBtn { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translateY(-50%) scale(1); } }
+        #start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
+
+        #scanner-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60vw; height: 60vw; max-width: 320px; max-height: 320px; border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        #scanner-ui.visible { opacity: 1; }
+
+        .corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
+        .top-left { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+        .top-right { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+        .bottom-right { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+
+        .scan-line { position: absolute; width: 100%; height: 8px; background: white; top: 0; left: 0; box-shadow: 0 0 20px white; animation: scanMove 2.0s ease-in-out infinite; }
+        @keyframes scanMove { 0%, 100% { top: 5%; opacity: 0.3; } 50% { top: 95%; opacity: 1; } }
+
+        #overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; padding: 12px 0; color: white; font-size: 18px; font-family: Arial, sans-serif; text-shadow: 2px 2px 4px black; background: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 10; transition: opacity 0.5s; pointer-events: none; opacity: 0; overflow: hidden; white-space: nowrap; }
+        #overlay.visible { opacity: 1; }
+
+        .marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 6.4s linear infinite; }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        .btn-ui { position: absolute; width: 36px; height: 36px; right: 15px; background: rgba(0, 0, 0, 0.4); color: white; border: 2px solid white; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 50; transition: opacity 0.5s; opacity: 0; pointer-events: none; text-decoration: none; overflow: hidden; }
+        .btn-ui.visible { opacity: 1; pointer-events: auto !important; }
+        
+        #info-btn { top: 15px; } #flash-btn { top: 60px; } #share-btn { top: 105px; } #cta-btn { top: 150px; } #help-btn { top: 195px; }
+
+        #screenshot-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-110%); width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
+        #screenshot-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
+
+        #record-btn { position: absolute; bottom: 30px; left: 15px; width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
+        #record-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
+        #record-btn.recording { border-color: #ff0000; animation: pulseRec 1s infinite; }
+        @keyframes pulseRec { 0% { box-shadow: 0 0 0px red; } 50% { box-shadow: 0 0 15px red; } 100% { box-shadow: 0 0 0px red; } }
+
+        #rec-timer { position: absolute; bottom: 45px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: #ff0000; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; display: none; }
+        #zoom-display { position: absolute; bottom: 15px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+        #zoom-display.visible { opacity: 1; }
+
+        .ui-icon { width: 70%; height: 70%; object-fit: contain; }
+
+        .msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; padding: 25px; text-align: center; color: white; background: rgba(0, 0, 0, 0.9); border-radius: 15px; border: 2px solid white; z-index: 40; transition: opacity 0.5s; opacity: 0; pointer-events: none; user-select: none; -webkit-user-select: none; line-height: 1.6; }
+        .msg-box.visible { opacity: 1; pointer-events: auto; }
+        
+        #info-message, #help-message { width: 54vw; height: 54vw; max-width: 250px; max-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; line-height: 1.35; font-family: Arial, sans-serif; font-size: 15px; }
+        .normal-font { font-family: Arial, sans-serif; font-size: 17px; }
+
+        /* Easter Egg Styles */
+        #easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; pointer-events: none; display: none; opacity: 1; }
+        .glitch-active { animation: glitchShake 0.12s infinite; }
+        @keyframes glitchShake { 0% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1.02); filter: hue-rotate(0deg); } 20% { transform: translate(-50%, -50%) translate(-5px, -5px) scale(0.98); filter: hue-rotate(90deg) invert(0.2); } 40% { transform: translate(-50%, -50%) translate(-8px, 8px) scale(1.05); filter: hue-rotate(-90deg); } 60% { transform: translate(-50%, -50%) translate(8px, -5px) scale(0.95); filter: invert(0.5); } 80% { transform: translate(-50%, -50%) translate(-3px, -8px) scale(1.02); filter: hue-rotate(180deg); } 100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1); filter: hue-rotate(0deg); } }
     </style>
 </head>
 <body>
 
     <img id="easter-egg-img" src="assets/dev.png" alt="dev">
-    <div id="flash-overlay"></div>
 
     <div id="scanner-ui">
         <div class="corner top-left"></div>
@@ -74,7 +143,6 @@
 
     <div id="help-message" class="msg-box normal-font">Scanner not loading? Pause your VPN, Adblocker or use link above in a default browser.</div>
     <div id="info-message" class="msg-box normal-font">Welcome Freaks<br>POINT SCAN DISCOVER!</div>
-    <div id="flash-error-message" class="msg-box normal-font" style="width: auto; padding: 15px;">flash unavailable</div>
     
     <div id="overlay">
         <span class="marquee-text">Point camera at the SCANFREAK design!</span>
@@ -88,6 +156,8 @@
 
         <a-assets>
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
+            <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
+            
             <img id="l1" src="parallax/layer1_frame.png">
             <img id="l2" src="parallax/layer2_car.png">
             <img id="l3" src="parallax/layer3_signs.png">
@@ -121,36 +191,79 @@
     </a-scene>
 
     <script>
-        // (PASTE YOUR V1.0 VARIABLES AND UI CONSTANTS HERE)
         const sceneEl = document.querySelector('a-scene');
-        const overlay = document.getElementById('overlay');
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
         const scannerUi = document.getElementById('scanner-ui');
-        // ... include all your button definitions ...
+        const overlay = document.getElementById('overlay');
+        const sfxStart = document.getElementById('sfx-start');
+        const sfxStartup = document.getElementById('sfx-startup');
+        
+        const helpBtn = document.getElementById('help-btn');
+        const ctaBtn = document.getElementById('cta-btn');
+        const shareBtn = document.getElementById('share-btn');
+        const infoBtn = document.getElementById('info-btn');
+        const flashBtn = document.getElementById('flash-btn');
+
+        let isStarted = false;
 
         const target = document.querySelector('#target-0');
         const video = document.querySelector('#l5-vid');
 
-        target.addEventListener('targetFound', () => {
-            // Trigger haptics and hide UI just like v1.0
-            if (navigator.vibrate) navigator.vibrate(50);
-            overlay.classList.remove('visible'); 
-            scannerUi.classList.remove('visible');
-            // Show record/screenshot buttons
-            document.getElementById('screenshot-btn').classList.add('visible');
-            
-            // Play video background
-            video.play().catch(e => console.log("Video play error:", e));
+        // Boot Sequence
+        sceneEl.addEventListener("arReady", () => {
+            document.getElementById('loading-container').style.visibility = 'hidden'; 
+            document.getElementById('logo-container').classList.add('animate-sweep');
+            document.getElementById('main-logo').classList.add('animate-logo');
+            setTimeout(() => { startBtn.classList.add('visible'); }, 3000);
         });
 
-        target.addEventListener('targetLost', () => {
-            // Show UI and pause video
+        // Start Button Logic
+        startBtn.addEventListener('click', () => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            if (sfxStart) sfxStart.play();
+            if (sfxStartup) setTimeout(() => sfxStartup.play(), 2000);
+            
+            startScreen.classList.add('hidden');
             overlay.classList.add('visible'); 
             scannerUi.classList.add('visible');
-            document.getElementById('screenshot-btn').classList.remove('visible');
-            video.pause();
+            [helpBtn, ctaBtn, shareBtn, infoBtn, flashBtn].forEach(btn => btn.classList.add('visible'));
+            isStarted = true;
+            
+            // Pre-warm the video
+            video.load();
         });
 
-        // (PASTE YOUR V1.0 START BUTTON AND EASTER EGG LOGIC HERE)
+        // Target Found Logic
+        target.addEventListener('targetFound', () => {
+            if (!isStarted) return;
+            if (navigator.vibrate) navigator.vibrate(50);
+            
+            overlay.classList.remove('visible'); 
+            scannerUi.classList.remove('visible');
+            [helpBtn, ctaBtn, shareBtn, infoBtn, flashBtn].forEach(btn => btn.classList.remove('visible'));
+            
+            document.getElementById('screenshot-btn').classList.add('visible');
+            document.getElementById('record-btn').classList.add('visible');
+            
+            video.play().catch(e => {
+                video.muted = true;
+                video.play();
+            });
+        });
+
+        // Target Lost Logic
+        target.addEventListener('targetLost', () => {
+            document.getElementById('screenshot-btn').classList.remove('visible');
+            document.getElementById('record-btn').classList.remove('visible');
+            
+            if (isStarted) {
+                overlay.classList.add('visible'); 
+                scannerUi.classList.add('visible');
+                [helpBtn, ctaBtn, shareBtn, infoBtn, flashBtn].forEach(btn => btn.classList.add('visible'));
+            }
+            video.pause();
+        });
     </script>
 </body>
 </html>
