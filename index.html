@@ -160,12 +160,12 @@
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
             <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
             
-            <img id="l1" src="parallax/layer1_frame.png">
-            <img id="l2" src="parallax/layer2_car.png">
-            <img id="l3" src="parallax/layer3_signs.png">
-            <img id="l4" src="parallax/layer4_buildings.png">
+            <img id="l1_01" src="parallax/layer1_01.png">
+            <img id="l2_01" src="parallax/layer2_01.png">
+            <img id="l3_01" src="parallax/layer3_01.png">
+            <img id="l4_01" src="parallax/layer4_01.png">
             
-            <video id="l5-vid" src="videos/layer5_rain.mp4" loop crossorigin="anonymous" playsinline></video>
+            <video id="l5_01-vid" src="videos/layer5_01.mp4" loop crossorigin="anonymous" playsinline></video>
         </a-assets>
 
         <a-entity mindar-image-target="targetIndex: 0" id="target-0">
@@ -177,54 +177,17 @@
                 <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
             </a-entity>
 
-            <a-plane src="#l1" width="1" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
+            <a-plane src="#l1_01" width="1" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
             
-            <a-plane src="#l2" width="1.1" height="1.95" position="0 0 -0.50" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
+            <a-plane src="#l2_01" width="1.1" height="1.95" position="0 0 -0.50" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
             
-            <a-plane src="#l3" width="1.3" height="2.3" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
+            <a-plane src="#l3_01" width="1.3" height="2.3" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
             
-            <a-plane src="#l4" width="1.6" height="2.84" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
+            <a-plane src="#l4_01" width="1.6" height="2.84" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
             
-            <a-video src="#l5-vid" width="6" height="10.6" position="0 0 -1.40"></a-video></a-entity>
+            <a-video src="#l5_01-vid" width="6" height="10.6" position="0 0 -1.40"></a-video>
 
-            <a-plane src="#l1" width="1" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l2" width="1.1" height="1.95" position="0 0 -0.50" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l3" width="1.3" height="2.3" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l4" width="1.6" height="2.84" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-video src="#l5-vid" width="6" height="10.6" position="0 0 -1.40"></a-video></a-entity>
-
-            <a-plane src="#l1" width="1" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l2" width="1.5" height="2.66" position="0 0 -0.50" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l3" width="1.9" height="3.37" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l4" width="2.2" height="3.91" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-video src="#l5-vid" width="2.4" height="4.26" position="0 0 -1.40"></a-video>
-
-        mindar-image-target="targetIndex: 0" id="target-0">
-            
-            <a-entity id="occlusion-mask" position="0 0 0.01">
-                <a-plane position="0 25.888 0" width="50" height="50" hider-material></a-plane>
-                <a-plane position="0 -25.888 0" width="50" height="50" hider-material></a-plane>
-                <a-plane position="-25.5 0 0" width="50" height="1.777" hider-material></a-plane>
-                <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
-            </a-entity>
-
-            <a-plane src="#l1" width="1" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l2" width="1.1" height="1.95" position="0 0 -0.50" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l3" width="1.3" height="2.3" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-plane src="#l4" width="1.6" height="2.84" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5"></a-plane>
-            
-            <a-video src="#l5-vid" width="6" height="10.6" position="0 0 -1.40"></a-video></a-entity>
+        </a-entity>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
     </a-scene>
@@ -247,7 +210,7 @@
         let isStarted = false;
 
         const target = document.querySelector('#target-0');
-        const video = document.querySelector('#l5-vid');
+        const video = document.querySelector('#l5_01-vid');
 
         // Boot Sequence
         sceneEl.addEventListener("arReady", () => {
