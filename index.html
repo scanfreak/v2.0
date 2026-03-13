@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.2 - DEEP PARALLAX & WILDCARDS</title>
+    <title>SCANFREAK AR V2.3 - EXTREME DEPTH PARALLAX</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -133,7 +133,6 @@
         </a-assets>
 
         <script>
-            // Added l7-frame behind the video (Z = -3.61) with 4.5x4.5 sizing for the 2038x2038 TinyPNG
             for(let i=0; i<=23; i++) {
                 document.write(`
                 <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}">
@@ -143,18 +142,16 @@
                         <a-plane position="-25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                     </a-entity>
-                    <a-plane class="l1" width="1.0" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l2" width="1.2" height="2.13" position="0 0 -0.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l3" width="1.4" height="2.48" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l4" width="1.6" height="2.84" position="0 0 -1.80" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l5" width="1.8" height="3.20" position="0 0 -2.40" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l6" width="2.0" height="3.55" position="0 0 -3.00" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
-                    <a-plane class="l7" width="2.2" height="3.90" position="0 0 -3.60" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    <a-plane class="l1" width="1.0" height="1.77" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
-                    <a-plane class="l7-frame" width="4.5" height="4.5" position="0 0 -3.61" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
-                    
-                    <a-plane class="wildcard-layer" width="2.16" height="3.83" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    <a-plane class="wildcard-layer" width="2.75" height="4.88" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                 </a-entity>`);
             }
         </script>
@@ -164,19 +161,20 @@
 
     <script>
         // --- BASE MAPPING ---
+        // Your config for the new deeper wildcardZ
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -3.50 },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -3.50 }
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75 },
+            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75 }
         ];
 
         const COLLECTION_DATA = {};
@@ -209,17 +207,13 @@
             const targetEl = document.querySelector(`#target-${index}`);
             if (!targetEl) return;
 
-            // Load PNG Layers 1 to 6
+            // Image references for Layers 1-6
             for(let l=1; l<=6; l++) {
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
-            // Load new Safety Ring (Layer 7 Frame)
-            const l7FramePlane = targetEl.querySelector('.l7-frame');
-            l7FramePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
-
-            // Setup Video Layer 7
+            // Layer 7 Video Setup
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
             l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
@@ -228,7 +222,7 @@
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
 
-            // Setup Wildcard Video
+            // Wildcard Video Setup
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
@@ -236,12 +230,12 @@
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
 
+            // MUTE / UNMUTE LOGIC
             wildcardVid.addEventListener('ended', () => {
                 wildcardPlane.setAttribute('visible', false);
                 if (activeLayer7Video) activeLayer7Video.muted = false;
             });
 
-            // Target Found Event
             targetEl.addEventListener('targetFound', () => {
                 if (!isStarted) return; 
                 if (navigator.vibrate) navigator.vibrate(50);
@@ -256,17 +250,14 @@
                 document.getElementById('screenshot-btn').classList.add('visible'); 
                 document.getElementById('record-btn').classList.add('visible');
 
-                // Make static layers visible
+                // Make layers visible
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
-                l7FramePlane.setAttribute('visible', true);
                 
-                // Make video visible and play
                 l7Plane.setAttribute('material', {src: l7Vid});
                 l7Plane.setAttribute('visible', true);
                 l7Vid.play().catch(e => { l7Vid.muted = true; l7Vid.play(); });
             });
 
-            // Target Lost Event
             targetEl.addEventListener('targetLost', () => {
                 activeTargetIndex = null;
                 document.getElementById('screenshot-btn').classList.remove('visible'); 
@@ -277,15 +268,9 @@
                     ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.add('visible'));
                 }
                 
-                // Pause media and hide elements
                 l7Vid.pause();
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
-                
-                // Hide static layers including the frame to reset cleanly
-                for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', false);
-                l7FramePlane.setAttribute('visible', false);
-                l7Plane.setAttribute('visible', false);
             });
         };
 
@@ -354,6 +339,8 @@
                 totalAngle += delta;
                 prevAngle = angle;
             }
+            // Math for 2 circles: 2 * 2PI = 12.56 radians. 
+            // Setting to 3.5 * PI (approx 1.75 circles) to remain forgiving.
             return Math.abs(totalAngle) > (3.5 * Math.PI);
         }
 
@@ -366,13 +353,16 @@
             feedback.style.opacity = '1';
             setTimeout(() => feedback.style.opacity = '0', 3000);
 
+            // Mute Layer 7
             if (activeLayer7Video) activeLayer7Video.muted = true;
 
+            // Setup Wildcard Z-Depth & Source
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
             
+            // Assign Video to Material, Show, and Play
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             activeWildcardPlane.setAttribute('visible', true);
             
