@@ -133,6 +133,7 @@
         </a-assets>
 
         <script>
+            // Added l7-frame behind the video (Z = -3.61) with 4.5x4.5 sizing for the 2038x2038 TinyPNG
             for(let i=0; i<=23; i++) {
                 document.write(`
                 <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}">
@@ -151,6 +152,8 @@
                     
                     <a-plane class="l7" width="2.2" height="3.90" position="0 0 -3.60" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
+                    <a-plane class="l7-frame" width="4.5" height="4.5" position="0 0 -3.61" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    
                     <a-plane class="wildcard-layer" width="2.16" height="3.83" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                 </a-entity>`);
             }
@@ -161,7 +164,6 @@
 
     <script>
         // --- BASE MAPPING ---
-        // Notice wildcardZ is now updated to -3.50 to sit exactly in front of the new Layer 7 depth
         const BASE_DATA = [
             { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -3.50 },
             { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -3.50 },
@@ -207,11 +209,17 @@
             const targetEl = document.querySelector(`#target-${index}`);
             if (!targetEl) return;
 
+            // Load PNG Layers 1 to 6
             for(let l=1; l<=6; l++) {
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
+            // Load new Safety Ring (Layer 7 Frame)
+            const l7FramePlane = targetEl.querySelector('.l7-frame');
+            l7FramePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+
+            // Setup Video Layer 7
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
             l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
@@ -220,6 +228,7 @@
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
 
+            // Setup Wildcard Video
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
@@ -232,6 +241,7 @@
                 if (activeLayer7Video) activeLayer7Video.muted = false;
             });
 
+            // Target Found Event
             targetEl.addEventListener('targetFound', () => {
                 if (!isStarted) return; 
                 if (navigator.vibrate) navigator.vibrate(50);
@@ -246,13 +256,17 @@
                 document.getElementById('screenshot-btn').classList.add('visible'); 
                 document.getElementById('record-btn').classList.add('visible');
 
+                // Make static layers visible
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
+                l7FramePlane.setAttribute('visible', true);
                 
+                // Make video visible and play
                 l7Plane.setAttribute('material', {src: l7Vid});
                 l7Plane.setAttribute('visible', true);
                 l7Vid.play().catch(e => { l7Vid.muted = true; l7Vid.play(); });
             });
 
+            // Target Lost Event
             targetEl.addEventListener('targetLost', () => {
                 activeTargetIndex = null;
                 document.getElementById('screenshot-btn').classList.remove('visible'); 
@@ -263,9 +277,15 @@
                     ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.add('visible'));
                 }
                 
+                // Pause media and hide elements
                 l7Vid.pause();
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
+                
+                // Hide static layers including the frame to reset cleanly
+                for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', false);
+                l7FramePlane.setAttribute('visible', false);
+                l7Plane.setAttribute('visible', false);
             });
         };
 
