@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.2 - PARALLAX & WILDCARDS</title>
+    <title>SCANFREAK AR V2.2 - DEEP PARALLAX & WILDCARDS</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -143,15 +143,15 @@
                         <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                     </a-entity>
                     <a-plane class="l1" width="1.0" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l2" width="1.1" height="1.95" position="0 0 -0.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l3" width="1.2" height="2.13" position="0 0 -0.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l4" width="1.3" height="2.30" position="0 0 -0.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l5" width="1.4" height="2.48" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l6" width="1.5" height="2.66" position="0 0 -1.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l2" width="1.2" height="2.13" position="0 0 -0.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l3" width="1.4" height="2.48" position="0 0 -1.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l4" width="1.6" height="2.84" position="0 0 -1.80" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l5" width="1.8" height="3.20" position="0 0 -2.40" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l6" width="2.0" height="3.55" position="0 0 -3.00" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
-                    <a-plane class="l7" width="1.6" height="2.84" position="0 0 -1.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    <a-plane class="l7" width="2.2" height="3.90" position="0 0 -3.60" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
-                    <a-plane class="wildcard-layer" width="1.55" height="2.75" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    <a-plane class="wildcard-layer" width="2.16" height="3.83" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                 </a-entity>`);
             }
         </script>
@@ -161,20 +161,20 @@
 
     <script>
         // --- BASE MAPPING ---
-        // Setup placeholders for all 12. Only index 0 (Cyberpunk) is fully mapped per your specs.
+        // Notice wildcardZ is now updated to -3.50 to sit exactly in front of the new Layer 7 depth
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -1.75 },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -1.75 }
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -3.50 },
+            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -3.50 }
         ];
 
         const COLLECTION_DATA = {};
@@ -207,13 +207,11 @@
             const targetEl = document.querySelector(`#target-${index}`);
             if (!targetEl) return;
 
-            // Image references for Layers 1-6
             for(let l=1; l<=6; l++) {
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
-            // Layer 7 Video Setup
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
             l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
@@ -222,7 +220,6 @@
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
 
-            // Wildcard Video Setup
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
@@ -230,7 +227,6 @@
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
 
-            // MUTE / UNMUTE LOGIC
             wildcardVid.addEventListener('ended', () => {
                 wildcardPlane.setAttribute('visible', false);
                 if (activeLayer7Video) activeLayer7Video.muted = false;
@@ -250,7 +246,6 @@
                 document.getElementById('screenshot-btn').classList.add('visible'); 
                 document.getElementById('record-btn').classList.add('visible');
 
-                // Make layers visible
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
                 
                 l7Plane.setAttribute('material', {src: l7Vid});
@@ -339,8 +334,6 @@
                 totalAngle += delta;
                 prevAngle = angle;
             }
-            // Math for 2 circles: 2 * 2PI = 12.56 radians. 
-            // Setting to 3.5 * PI (approx 1.75 circles) to remain forgiving.
             return Math.abs(totalAngle) > (3.5 * Math.PI);
         }
 
@@ -353,17 +346,13 @@
             feedback.style.opacity = '1';
             setTimeout(() => feedback.style.opacity = '0', 3000);
 
-            // Mute Layer 7
             if (activeLayer7Video) activeLayer7Video.muted = true;
 
-            // Setup Wildcard Z-Depth & Source
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
-            // Expected path: videos/wildcards/cyber1.mp4 
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
             
-            // Assign Video to Material, Show, and Play
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             activeWildcardPlane.setAttribute('visible', true);
             
