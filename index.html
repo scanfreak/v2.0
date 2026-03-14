@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.5 - EXTREME DEPTH + MASSIVE FRAME</title>
+    <title>SCANFREAK AR V2.7 - LAYER 3 IDLE HOVER & CHOREOGRAPHY</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -164,19 +164,20 @@
 
     <script>
         // --- BASE MAPPING ---
+        // NEW: Added l3Idle to control continuous animations before gesture is triggered
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75 },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75 }
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover' },
+            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none' },
+            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'none' },
+            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
+            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' }
         ];
 
         const COLLECTION_DATA = {};
@@ -199,6 +200,7 @@
         let activeLayer7Video = null;
         let activeWildcardVideo = null;
         let activeWildcardPlane = null;
+        let isWildcardSequenceRunning = false;
 
         const videoPool = {}; 
         const wildcardPool = {};
@@ -209,17 +211,14 @@
             const targetEl = document.querySelector(`#target-${index}`);
             if (!targetEl) return;
 
-            // Image references for Layers 1-6
             for(let l=1; l<=6; l++) {
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
-            // Layer 7 Frame Setup
             const framePlane = targetEl.querySelector('.l7-frame');
             framePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
 
-            // Layer 7 Video Setup
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
             l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
@@ -228,7 +227,6 @@
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
 
-            // Wildcard Video Setup
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
@@ -236,10 +234,27 @@
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
 
-            // MUTE / UNMUTE LOGIC
+            // MUTE / UNMUTE & REVERSE ANIMATION LOGIC
             wildcardVid.addEventListener('ended', () => {
                 wildcardPlane.setAttribute('visible', false);
+                isWildcardSequenceRunning = false;
+                
                 if (activeLayer7Video) activeLayer7Video.muted = false;
+
+                // Bring Layer 3 back to original state
+                const l3Plane = targetEl.querySelector('.l3');
+                if (data.l3AnimType === 'slideLeft') {
+                    l3Plane.setAttribute('animation', 'property: position; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
+                } else if (data.l3AnimType === 'zoomIn') {
+                    l3Plane.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
+                }
+
+                // Restart hover after entrance animation finishes
+                setTimeout(() => {
+                    if (activeTargetIndex === index && data.l3Idle === 'hover') {
+                        l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.08 -1.60; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine');
+                    }
+                }, 800);
             });
 
             targetEl.addEventListener('targetFound', () => {
@@ -257,9 +272,14 @@
                 document.getElementById('record-btn').classList.add('visible');
 
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
-                
                 framePlane.setAttribute('visible', true);
                 
+                // Start normal Idle Hover if configured
+                if (data.l3Idle === 'hover') {
+                    const l3Plane = targetEl.querySelector('.l3');
+                    l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.08 -1.60; dir: alternate; dur: 2000; loop: true; easing: easeInOutSine');
+                }
+
                 l7Plane.setAttribute('material', {src: l7Vid});
                 l7Plane.setAttribute('visible', true);
                 l7Vid.play().catch(e => { l7Vid.muted = true; l7Vid.play(); });
@@ -267,6 +287,8 @@
 
             targetEl.addEventListener('targetLost', () => {
                 activeTargetIndex = null;
+                isWildcardSequenceRunning = false;
+                
                 document.getElementById('screenshot-btn').classList.remove('visible'); 
                 document.getElementById('record-btn').classList.remove('visible');
                 
@@ -278,6 +300,14 @@
                 l7Vid.pause();
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
+
+                // RESET FAILSAFE: Strip all animations and snap L3 back to default if tracking is lost mid-animation
+                const l3Plane = targetEl.querySelector('.l3');
+                l3Plane.removeAttribute('animation__hover');
+                l3Plane.removeAttribute('animation');
+                l3Plane.setAttribute('position', '0 0 -1.60');
+                l3Plane.setAttribute('scale', '1 1 1');
+                l7Vid.muted = false;
             });
         };
 
@@ -310,7 +340,7 @@
         let isDrawing = false;
 
         window.addEventListener('pointerdown', (e) => {
-            if (!isStarted || activeTargetIndex === null) return;
+            if (!isStarted || activeTargetIndex === null || isWildcardSequenceRunning) return;
             isDrawing = true;
             touchPoints = [{x: e.clientX, y: e.clientY}];
         });
@@ -325,7 +355,7 @@
             isDrawing = false;
             
             if (analyzeGesture(touchPoints)) {
-                triggerWildcard(activeTargetIndex);
+                initiateWildcardSequence(activeTargetIndex);
             }
         });
 
@@ -349,14 +379,43 @@
             return Math.abs(totalAngle) > (3.5 * Math.PI);
         }
 
-        function triggerWildcard(targetIndex) {
+        function initiateWildcardSequence(targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data) return;
+
+            isWildcardSequenceRunning = true; // Prevent re-triggering
 
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
             const feedback = document.getElementById('gesture-feedback');
             feedback.style.opacity = '1';
             setTimeout(() => feedback.style.opacity = '0', 3000);
+
+            const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
+
+            // Stop hover effect immediately
+            if (data.l3Idle === 'hover') {
+                l3Plane.removeAttribute('animation__hover');
+            }
+
+            // Check config and trigger the assigned animation
+            if (data.l3AnimType === 'slideLeft') {
+                // X = -3.5 moves the 2.0 width plane entirely out of the FOV
+                l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
+                setTimeout(() => playWildcard(data), 800);
+            } else if (data.l3AnimType === 'zoomIn') {
+                // For zoom, ensure it is centered from hover, then scale up
+                l3Plane.setAttribute('position', '0 0 -1.60');
+                l3Plane.setAttribute('animation', 'property: scale; to: 2 2 2; dur: 800; easing: easeInOutQuad');
+                setTimeout(() => playWildcard(data), 800);
+            } else {
+                // No animation assigned, ensure it's centered, play immediately
+                l3Plane.setAttribute('position', '0 0 -1.60');
+                playWildcard(data);
+            }
+        }
+
+        function playWildcard(data) {
+            if (!isWildcardSequenceRunning) return; // Failsafe if target lost during animation
 
             if (activeLayer7Video) activeLayer7Video.muted = true;
 
