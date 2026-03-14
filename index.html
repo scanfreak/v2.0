@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.8 - WRAP-AROUND CHOREOGRAPHY</title>
+    <title>SCANFREAK AR V2.9 - AUDIO UNLOCK & WRAP-AROUND</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -163,7 +163,6 @@
     </a-scene>
 
     <script>
-        // --- BASE MAPPING ---
         const BASE_DATA = [
             { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover' },
             { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none' },
@@ -185,7 +184,6 @@
             COLLECTION_DATA[index + 12] = data; 
         });
 
-        // --- GLOBAL VARIABLES ---
         const sceneEl = document.querySelector('a-scene');
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -204,7 +202,6 @@
         const videoPool = {}; 
         const wildcardPool = {};
 
-        // --- DYNAMIC SETUP LOGIC ---
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
             const targetEl = document.querySelector(`#target-${index}`);
@@ -233,23 +230,19 @@
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
 
-            // MUTE / UNMUTE & REVERSE ANIMATION LOGIC
             wildcardVid.addEventListener('ended', () => {
                 wildcardPlane.setAttribute('visible', false);
                 isWildcardSequenceRunning = false;
                 
                 if (activeLayer7Video) activeLayer7Video.muted = false;
 
-                // Bring Layer 3 back to original state
                 const l3Plane = targetEl.querySelector('.l3');
                 if (data.l3AnimType === 'slideLeft') {
-                    // Start from the far right (3.5) and slide back to center (0)
                     l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
                 } else if (data.l3AnimType === 'zoomIn') {
                     l3Plane.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
                 }
 
-                // Restart hover after entrance animation finishes
                 setTimeout(() => {
                     if (activeTargetIndex === index && data.l3Idle === 'hover') {
                         l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
@@ -274,7 +267,6 @@
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
                 framePlane.setAttribute('visible', true);
                 
-                // Start normal Idle Hover (Updated: Bigger height & Faster speed)
                 if (data.l3Idle === 'hover') {
                     const l3Plane = targetEl.querySelector('.l3');
                     l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
@@ -301,7 +293,6 @@
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
 
-                // RESET FAILSAFE
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
                 l3Plane.removeAttribute('animation');
@@ -313,7 +304,6 @@
 
         window.addEventListener('load', () => Object.keys(COLLECTION_DATA).forEach(index => setupTarget(index)));
 
-        // --- BOOT SEQUENCE ---
         sceneEl.addEventListener("arReady", () => {
             document.getElementById('loading-container').style.visibility = 'hidden'; 
             document.getElementById('logo-container').classList.add('animate-sweep');
@@ -335,7 +325,6 @@
             Object.values(videoPool).forEach(v => v.load());
         });
 
-        // --- GESTURE RECOGNITION (2 CIRCLES) ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -396,34 +385,47 @@
                 l3Plane.removeAttribute('animation__hover');
             }
 
+            // === CRITICAL FIX: The Touch Unlock ===
+            // This happens instantly during the pointerup event to secure audio playback rights.
+            const randomVidNum = Math.floor(Math.random() * data.count) + 1;
+            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
+            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            
+            activeWildcardVideo.muted = false; // Ensure sound is requested
+            const playPromise = activeWildcardVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    activeWildcardVideo.pause(); // Pause immediately so it waits for the animation
+                }).catch(e => console.log("Unlock handled gracefully"));
+            }
+            // ======================================
+
             if (data.l3AnimType === 'slideLeft') {
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
-                setTimeout(() => playWildcard(data), 800);
+                setTimeout(() => finalizeWildcard(data), 800);
             } else if (data.l3AnimType === 'zoomIn') {
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('animation', 'property: scale; to: 2 2 2; dur: 800; easing: easeInOutQuad');
-                setTimeout(() => playWildcard(data), 800);
+                setTimeout(() => finalizeWildcard(data), 800);
             } else {
                 l3Plane.setAttribute('position', '0 0 -1.60');
-                playWildcard(data);
+                finalizeWildcard(data);
             }
         }
 
-        function playWildcard(data) {
+        function finalizeWildcard(data) {
             if (!isWildcardSequenceRunning) return; 
 
             if (activeLayer7Video) activeLayer7Video.muted = true;
-
-            activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
-            const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
-            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            
-            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             activeWildcardPlane.setAttribute('visible', true);
             
-            activeWildcardVideo.load();
-            activeWildcardVideo.play().catch(e => { activeWildcardVideo.muted = true; activeWildcardVideo.play(); });
+            // Because of the touch unlock, this will now play with sound securely.
+            activeWildcardVideo.play().catch(e => { 
+                activeWildcardVideo.muted = true; 
+                activeWildcardVideo.play(); 
+            });
         }
     </script>
 </body>
