@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.3 - EXTREME DEPTH PARALLAX</title>
+    <title>SCANFREAK AR V2.4 - EXTREME DEPTH + FRAME</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -149,6 +149,9 @@
                     <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    
+                    <a-plane class="l7-frame" width="2.82" height="5.01" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    
                     <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
                     <a-plane class="wildcard-layer" width="2.75" height="4.88" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
@@ -161,7 +164,6 @@
 
     <script>
         // --- BASE MAPPING ---
-        // Your config for the new deeper wildcardZ
         const BASE_DATA = [
             { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75 },
             { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75 },
@@ -213,6 +215,10 @@
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
+            // NEW: Setup Layer 7 Frame
+            const framePlane = targetEl.querySelector('.l7-frame');
+            framePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+
             // Layer 7 Video Setup
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
@@ -252,6 +258,9 @@
 
                 // Make layers visible
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
+                
+                // Show the Frame
+                framePlane.setAttribute('visible', true);
                 
                 l7Plane.setAttribute('material', {src: l7Vid});
                 l7Plane.setAttribute('visible', true);
@@ -339,8 +348,6 @@
                 totalAngle += delta;
                 prevAngle = angle;
             }
-            // Math for 2 circles: 2 * 2PI = 12.56 radians. 
-            // Setting to 3.5 * PI (approx 1.75 circles) to remain forgiving.
             return Math.abs(totalAngle) > (3.5 * Math.PI);
         }
 
