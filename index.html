@@ -143,14 +143,14 @@
                         <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                     </a-entity>
                     
-                    <a-plane class="l1" width="1.0" height="1.77" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l1" width="1.0" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
-                    <a-plane class="l7-frame" width="2.82" height="5.01" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l7-frame" width="1.0" height="1.777" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
                     <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
@@ -215,7 +215,7 @@
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
 
-            // NEW: Setup Layer 7 Frame
+            // Layer 7 Frame Setup
             const framePlane = targetEl.querySelector('.l7-frame');
             framePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
 
@@ -256,10 +256,8 @@
                 document.getElementById('screenshot-btn').classList.add('visible'); 
                 document.getElementById('record-btn').classList.add('visible');
 
-                // Make layers visible
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
                 
-                // Show the Frame
                 framePlane.setAttribute('visible', true);
                 
                 l7Plane.setAttribute('material', {src: l7Vid});
@@ -360,16 +358,13 @@
             feedback.style.opacity = '1';
             setTimeout(() => feedback.style.opacity = '0', 3000);
 
-            // Mute Layer 7
             if (activeLayer7Video) activeLayer7Video.muted = true;
 
-            // Setup Wildcard Z-Depth & Source
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
             
-            // Assign Video to Material, Show, and Play
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             activeWildcardPlane.setAttribute('visible', true);
             
