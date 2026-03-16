@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.9 - AUDIO UNLOCK & WRAP-AROUND</title>
+    <title>SCANFREAK AR V2.10 - LAYER PHYSICS & MASSIVE FRAME</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -33,6 +33,44 @@
                         setHider(this.el.getObject3D('mesh'));
                     }
                 });
+            }
+        });
+
+        // TWEAK 2: Circular Motion Physics Engine for Layer 4
+        AFRAME.registerComponent('circular-motion', {
+            schema: { radius: {type: 'number', default: 0.04}, speed: {type: 'number', default: 0.0015} },
+            init: function() { 
+                this.time = 0; 
+                this.baseX = this.el.object3D.position.x; 
+                this.baseY = this.el.object3D.position.y; 
+            },
+            tick: function(t, dt) {
+                this.time += dt * this.data.speed;
+                this.el.object3D.position.x = this.baseX + Math.cos(this.time) * this.data.radius;
+                this.el.object3D.position.y = this.baseY + Math.sin(this.time) * this.data.radius;
+            }
+        });
+
+        // TWEAK 3: Glitch Bob Physics Engine for Layer 5
+        AFRAME.registerComponent('glitch-bob', {
+            schema: { bobSpeed: {type: 'number', default: 0.002}, bobHeight: {type: 'number', default: 0.06}, glitchIntensity: {type: 'number', default: 0.04} },
+            init: function() {
+                this.time = 0;
+                this.baseX = this.el.object3D.position.x;
+                this.baseY = this.el.object3D.position.y;
+            },
+            tick: function(t, dt) {
+                this.time += dt * this.data.bobSpeed;
+                let newY = this.baseY + Math.sin(this.time) * this.data.bobHeight;
+                let newX = this.baseX;
+
+                // 10% chance per frame to violently jerk coordinates
+                if (Math.random() < 0.10) {
+                    newX += (Math.random() - 0.5) * this.data.glitchIntensity;
+                    newY += (Math.random() - 0.5) * this.data.glitchIntensity;
+                }
+
+                this.el.object3D.position.set(newX, newY, this.el.object3D.position.z);
             }
         });
     </script>
@@ -150,7 +188,7 @@
                     <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
-                    <a-plane class="l7-frame" width="5.6" height="9.94" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     
                     <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
@@ -163,19 +201,21 @@
     </a-scene>
 
     <script>
+        // --- BASE MAPPING ---
+        // Added l4Anim and l5Anim config to Cyberpunk to activate the new physics components
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover' },
-            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none' },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'none' },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none' }
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'glitchBob' },
+            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' }
         ];
 
         const COLLECTION_DATA = {};
@@ -272,6 +312,14 @@
                     l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
                 }
 
+                // Activate New Tweak Physics
+                if (data.l4Anim === 'circular') {
+                    targetEl.querySelector('.l4').setAttribute('circular-motion', '');
+                }
+                if (data.l5Anim === 'glitchBob') {
+                    targetEl.querySelector('.l5').setAttribute('glitch-bob', '');
+                }
+
                 l7Plane.setAttribute('material', {src: l7Vid});
                 l7Plane.setAttribute('visible', true);
                 l7Vid.play().catch(e => { l7Vid.muted = true; l7Vid.play(); });
@@ -293,11 +341,22 @@
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
 
+                // RESET FAILSAFES
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
                 l3Plane.removeAttribute('animation');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
+
+                // Kill Tweak Physics and snap layers back to default
+                const l4Plane = targetEl.querySelector('.l4');
+                l4Plane.removeAttribute('circular-motion');
+                l4Plane.setAttribute('position', '0 0 -1.90');
+
+                const l5Plane = targetEl.querySelector('.l5');
+                l5Plane.removeAttribute('glitch-bob');
+                l5Plane.setAttribute('position', '0 0 -2.20');
+
                 l7Vid.muted = false;
             });
         };
@@ -385,21 +444,18 @@
                 l3Plane.removeAttribute('animation__hover');
             }
 
-            // === CRITICAL FIX: The Touch Unlock ===
-            // This happens instantly during the pointerup event to secure audio playback rights.
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             
-            activeWildcardVideo.muted = false; // Ensure sound is requested
+            activeWildcardVideo.muted = false; 
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    activeWildcardVideo.pause(); // Pause immediately so it waits for the animation
+                    activeWildcardVideo.pause(); 
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
-            // ======================================
 
             if (data.l3AnimType === 'slideLeft') {
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
@@ -421,7 +477,6 @@
             
             activeWildcardPlane.setAttribute('visible', true);
             
-            // Because of the touch unlock, this will now play with sound securely.
             activeWildcardVideo.play().catch(e => { 
                 activeWildcardVideo.muted = true; 
                 activeWildcardVideo.play(); 
