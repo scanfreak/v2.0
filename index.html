@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.10 - LAYER PHYSICS & MASSIVE FRAME</title>
+    <title>SCANFREAK AR V2.11 - SMOOTH BOB & LAYER 1 OVERBLEED</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -36,7 +36,7 @@
             }
         });
 
-        // TWEAK 2: Circular Motion Physics Engine for Layer 4
+        // Circular Motion Physics Engine for Layer 4
         AFRAME.registerComponent('circular-motion', {
             schema: { radius: {type: 'number', default: 0.04}, speed: {type: 'number', default: 0.0015} },
             init: function() { 
@@ -51,9 +51,9 @@
             }
         });
 
-        // TWEAK 3: Glitch Bob Physics Engine for Layer 5
-        AFRAME.registerComponent('glitch-bob', {
-            schema: { bobSpeed: {type: 'number', default: 0.002}, bobHeight: {type: 'number', default: 0.06}, glitchIntensity: {type: 'number', default: 0.04} },
+        // TWEAK 1: Smooth Bob Physics Engine for Layer 5 (Glitch removed)
+        AFRAME.registerComponent('smooth-bob', {
+            schema: { bobSpeed: {type: 'number', default: 0.002}, bobHeight: {type: 'number', default: 0.06} },
             init: function() {
                 this.time = 0;
                 this.baseX = this.el.object3D.position.x;
@@ -62,15 +62,7 @@
             tick: function(t, dt) {
                 this.time += dt * this.data.bobSpeed;
                 let newY = this.baseY + Math.sin(this.time) * this.data.bobHeight;
-                let newX = this.baseX;
-
-                // 10% chance per frame to violently jerk coordinates
-                if (Math.random() < 0.10) {
-                    newX += (Math.random() - 0.5) * this.data.glitchIntensity;
-                    newY += (Math.random() - 0.5) * this.data.glitchIntensity;
-                }
-
-                this.el.object3D.position.set(newX, newY, this.el.object3D.position.z);
+                this.el.object3D.position.set(this.baseX, newY, this.el.object3D.position.z);
             }
         });
     </script>
@@ -181,7 +173,8 @@
                         <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                     </a-entity>
                     
-                    <a-plane class="l1" width="1.0" height="1.777" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l1" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    
                     <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
@@ -202,9 +195,9 @@
 
     <script>
         // --- BASE MAPPING ---
-        // Added l4Anim and l5Anim config to Cyberpunk to activate the new physics components
+        // TWEAK 1: Changed Cyberpunk l5Anim from 'glitchBob' to 'smoothBob'
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'glitchBob' },
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
             { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
             { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
             { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
@@ -312,12 +305,12 @@
                     l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
                 }
 
-                // Activate New Tweak Physics
                 if (data.l4Anim === 'circular') {
                     targetEl.querySelector('.l4').setAttribute('circular-motion', '');
                 }
-                if (data.l5Anim === 'glitchBob') {
-                    targetEl.querySelector('.l5').setAttribute('glitch-bob', '');
+                // TWEAK 1: Triggering new smoothBob for L5
+                if (data.l5Anim === 'smoothBob') {
+                    targetEl.querySelector('.l5').setAttribute('smooth-bob', '');
                 }
 
                 l7Plane.setAttribute('material', {src: l7Vid});
@@ -341,20 +334,19 @@
                 wildcardVid.pause();
                 wildcardPlane.setAttribute('visible', false);
 
-                // RESET FAILSAFES
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
                 l3Plane.removeAttribute('animation');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
 
-                // Kill Tweak Physics and snap layers back to default
                 const l4Plane = targetEl.querySelector('.l4');
                 l4Plane.removeAttribute('circular-motion');
                 l4Plane.setAttribute('position', '0 0 -1.90');
 
+                // TWEAK 1: Cleanup mapped to smooth-bob
                 const l5Plane = targetEl.querySelector('.l5');
-                l5Plane.removeAttribute('glitch-bob');
+                l5Plane.removeAttribute('smooth-bob');
                 l5Plane.setAttribute('position', '0 0 -2.20');
 
                 l7Vid.muted = false;
