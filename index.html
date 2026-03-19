@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.11 - SMOOTH BOB & LAYER 1 OVERBLEED</title>
+    <title>SCANFREAK AR V2.13 - GLOBAL VIDEO POOL</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -17,7 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <script>
-        // Occlusion Mask Component
         AFRAME.registerComponent('hider-material', {
             init: function () {
                 const setHider = (mesh) => {
@@ -29,14 +28,11 @@
                 };
                 setHider(this.el.getObject3D('mesh'));
                 this.el.addEventListener('object3dset', (e) => {
-                    if (e.detail.type === 'mesh') {
-                        setHider(this.el.getObject3D('mesh'));
-                    }
+                    if (e.detail.type === 'mesh') { setHider(this.el.getObject3D('mesh')); }
                 });
             }
         });
 
-        // Circular Motion Physics Engine for Layer 4
         AFRAME.registerComponent('circular-motion', {
             schema: { radius: {type: 'number', default: 0.04}, speed: {type: 'number', default: 0.0015} },
             init: function() { 
@@ -51,7 +47,6 @@
             }
         });
 
-        // TWEAK 1: Smooth Bob Physics Engine for Layer 5 (Glitch removed)
         AFRAME.registerComponent('smooth-bob', {
             schema: { bobSpeed: {type: 'number', default: 0.002}, bobHeight: {type: 'number', default: 0.06} },
             init: function() {
@@ -63,6 +58,63 @@
                 this.time += dt * this.data.bobSpeed;
                 let newY = this.baseY + Math.sin(this.time) * this.data.bobHeight;
                 this.el.object3D.position.set(this.baseX, newY, this.el.object3D.position.z);
+            }
+        });
+
+        AFRAME.registerComponent('evil-glitch', {
+            schema: { active: {type: 'boolean', default: false} },
+            tick: function() {
+                if(!this.data.active) {
+                    this.el.setAttribute('opacity', 1);
+                    return;
+                }
+                if(Math.random() < 0.04) {
+                    this.el.setAttribute('opacity', Math.random() > 0.5 ? 0.2 : 0.7);
+                } else {
+                    this.el.setAttribute('opacity', 1);
+                }
+            }
+        });
+
+        AFRAME.registerComponent('proximity-door', {
+            schema: { active: {type: 'boolean', default: false} },
+            init: function() {
+                this.isOpen = false;
+                this.camera = document.querySelector('a-camera').object3D;
+                this.doorAudio = document.getElementById('sfx-door-whoosh');
+                this.vector = new THREE.Vector3();
+                this.camDir = new THREE.Vector3();
+            },
+            tick: function() {
+                if(!this.data.active) {
+                    if (this.isOpen) {
+                        this.el.setAttribute('position', '0 0 0.02'); 
+                        this.isOpen = false;
+                    }
+                    return;
+                }
+
+                this.el.parentEl.object3D.getWorldPosition(this.vector);
+                let dist = this.camera.position.distanceTo(this.vector);
+                
+                this.camera.getWorldDirection(this.camDir);
+                let normal = new THREE.Vector3(0, 0, 1);
+                normal.transformDirection(this.el.parentEl.object3D.matrixWorld).normalize();
+                let angleDot = Math.abs(normal.dot(this.camDir)); 
+                let isExtremeAngle = angleDot < 0.45; 
+
+                let shouldBeOpen = dist < 2.5 || isExtremeAngle; 
+                let shouldBeClosed = dist > 3.2 && !isExtremeAngle; 
+
+                if (shouldBeOpen && !this.isOpen) {
+                    this.isOpen = true;
+                    this.el.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
+                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play(); }
+                } else if (shouldBeClosed && this.isOpen) {
+                    this.isOpen = false;
+                    this.el.setAttribute('animation__door', 'property: position; to: 0 0 0.02; dur: 800; easing: easeOutQuad');
+                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play(); }
+                }
             }
         });
     </script>
@@ -115,13 +167,15 @@
         #record-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
         .ui-icon { width: 70%; height: 70%; object-fit: contain; }
 
-        /* Gesture Feedback */
         #gesture-feedback { position: absolute; top: 15px; left: 15px; color: #00ff00; font-family: 'Press Start 2P', cursive; font-size: 10px; z-index: 99; opacity: 0; transition: opacity 0.3s; text-shadow: 1px 1px 2px black; pointer-events: none; }
+        #easter-egg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black; color: red; display: flex; justify-content: center; align-items: center; z-index: 100; font-family: 'Press Start 2P', cursive; font-size: 20px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.5s; }
+        #easter-egg-overlay.active { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
 
     <div id="gesture-feedback">WILDCARD UNLOCKED</div>
+    <div id="easter-egg-overlay">SYSTEM OVERRIDE</div>
 
     <div id="scanner-ui">
         <div class="corner top-left"></div>
@@ -152,7 +206,7 @@
     </div>
 
     <a-scene id="ar-scene"
-        mindar-image="imageTargetSrc: descriptors/collection02/cyberpunk.mind; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 5; uiScanning: no" 
+        mindar-image="imageTargetSrc: descriptors/collection02/collection2.mind; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 5; uiScanning: no" 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights: true, preserveDrawingBuffer: true, antialias: false, alpha: true" 
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
@@ -160,6 +214,9 @@
         <a-assets>
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
             <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
+            <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
+            <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
+            <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto" loop></audio>
         </a-assets>
 
         <script>
@@ -174,9 +231,8 @@
                     </a-entity>
                     
                     <a-plane class="l1" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    
-                    <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                    <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
+                    <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                     <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
@@ -185,7 +241,7 @@
                     
                     <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     
-                    <a-plane class="wildcard-layer" width="2.75" height="4.88" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                    <a-plane class="wildcard-layer" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                 </a-entity>`);
             }
         </script>
@@ -194,21 +250,19 @@
     </a-scene>
 
     <script>
-        // --- BASE MAPPING ---
-        // TWEAK 1: Changed Cyberpunk l5Anim from 'glitchBob' to 'smoothBob'
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
-            { name: 'placeholder2', id: '02', folder: 'design2', wildcardPrefix: 'des2', count: 10, wildcardZ: -2.75, l3AnimType: 'zoomIn', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, wildcardZ: -2.75, l3AnimType: 'slideLeft', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, wildcardZ: -2.75, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' }
+            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'containment_cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
+            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 }
         ];
 
         const COLLECTION_DATA = {};
@@ -227,13 +281,62 @@
         
         let isStarted = false;
         let activeTargetIndex = null;
-        let activeLayer7Video = null;
-        let activeWildcardVideo = null;
-        let activeWildcardPlane = null;
         let isWildcardSequenceRunning = false;
+        
+        const sfxSiren = document.getElementById('sfx-siren');
+        const sfxEvilLaugh = document.getElementById('sfx-evil-laugh');
 
-        const videoPool = {}; 
-        const wildcardPool = {};
+        // MASSIVE OPTIMIZATION: Only 2 global video elements total, preventing browser deadlock
+        const sharedL7Vid = document.createElement('video');
+        sharedL7Vid.crossOrigin = "anonymous"; sharedL7Vid.loop = true; sharedL7Vid.setAttribute('playsinline', ''); sharedL7Vid.style.display = 'none';
+        document.body.appendChild(sharedL7Vid);
+
+        const sharedWildcardVid = document.createElement('video');
+        sharedWildcardVid.crossOrigin = "anonymous"; sharedWildcardVid.loop = false; sharedWildcardVid.setAttribute('playsinline', ''); sharedWildcardVid.style.display = 'none';
+        document.body.appendChild(sharedWildcardVid);
+
+        sharedWildcardVid.addEventListener('ended', () => {
+            if (activeTargetIndex === null) return;
+            const data = COLLECTION_DATA[activeTargetIndex];
+            const targetEl = document.querySelector(`#target-${activeTargetIndex}`);
+            
+            targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
+            isWildcardSequenceRunning = false;
+            sharedL7Vid.muted = false;
+
+            if (data.designLogic === 'cyberpunk') {
+                const l3Plane = targetEl.querySelector('.l3');
+                l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
+                setTimeout(() => {
+                    if (activeTargetIndex !== null) {
+                        l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
+                    }
+                }, 800);
+            }
+
+            if (data.designLogic === 'containment') {
+                const l2Plane = targetEl.querySelector('.l2');
+                const l3Plane = targetEl.querySelector('.l3');
+                const l4Plane = targetEl.querySelector('.l4');
+                const l6Plane = targetEl.querySelector('.l6');
+
+                l4Plane.setAttribute('animation__scale', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
+
+                setTimeout(() => {
+                    if (activeTargetIndex === null) return;
+                    l2Plane.removeAttribute('animation__color');
+                    l2Plane.removeAttribute('animation__op');
+                    l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+
+                    l3Plane.removeAttribute('animation__color');
+                    l3Plane.removeAttribute('animation__op');
+                    l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+
+                    l6Plane.setAttribute('evil-glitch', 'active: true');
+                    if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
+                }, 800);
+            }
+        });
 
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
@@ -244,53 +347,13 @@
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
-
-            const framePlane = targetEl.querySelector('.l7-frame');
-            framePlane.setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
-
-            const l7Plane = targetEl.querySelector('.l7');
-            const l7Vid = document.createElement('video');
-            l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
-            l7Vid.setAttribute('playsinline', ''); l7Vid.style.display = 'none';
-            l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
-            document.body.appendChild(l7Vid);
-            videoPool[index] = l7Vid;
-
-            const wildcardPlane = targetEl.querySelector('.wildcard-layer');
-            const wildcardVid = document.createElement('video');
-            wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
-            wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
-            document.body.appendChild(wildcardVid);
-            wildcardPool[index] = wildcardVid;
-
-            wildcardVid.addEventListener('ended', () => {
-                wildcardPlane.setAttribute('visible', false);
-                isWildcardSequenceRunning = false;
-                
-                if (activeLayer7Video) activeLayer7Video.muted = false;
-
-                const l3Plane = targetEl.querySelector('.l3');
-                if (data.l3AnimType === 'slideLeft') {
-                    l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
-                } else if (data.l3AnimType === 'zoomIn') {
-                    l3Plane.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
-                }
-
-                setTimeout(() => {
-                    if (activeTargetIndex === index && data.l3Idle === 'hover') {
-                        l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
-                    }
-                }, 800);
-            });
+            targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
 
             targetEl.addEventListener('targetFound', () => {
                 if (!isStarted) return; 
                 if (navigator.vibrate) navigator.vibrate(50);
                 
                 activeTargetIndex = index;
-                activeLayer7Video = l7Vid;
-                activeWildcardVideo = wildcardVid;
-                activeWildcardPlane = wildcardPlane;
 
                 overlay.classList.remove('visible'); scannerUi.classList.remove('visible');
                 ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.remove('visible'));
@@ -298,24 +361,28 @@
                 document.getElementById('record-btn').classList.add('visible');
 
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
-                framePlane.setAttribute('visible', true);
+                targetEl.querySelector('.l7-frame').setAttribute('visible', true);
                 
-                if (data.l3Idle === 'hover') {
-                    const l3Plane = targetEl.querySelector('.l3');
-                    l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
-                }
-
-                if (data.l4Anim === 'circular') {
+                if (data.designLogic === 'cyberpunk') {
+                    targetEl.querySelector('.l3').setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
                     targetEl.querySelector('.l4').setAttribute('circular-motion', '');
-                }
-                // TWEAK 1: Triggering new smoothBob for L5
-                if (data.l5Anim === 'smoothBob') {
                     targetEl.querySelector('.l5').setAttribute('smooth-bob', '');
                 }
 
-                l7Plane.setAttribute('material', {src: l7Vid});
+                if (data.designLogic === 'containment') {
+                    targetEl.querySelector('.l1').setAttribute('proximity-door', 'active: true');
+                    targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
+                    if (sfxEvilLaugh) { sfxEvilLaugh.muted = false; sfxEvilLaugh.play(); }
+                    if (sfxSiren) { sfxSiren.currentTime = 0; sfxSiren.play(); }
+                }
+
+                // Global Video Handoff
+                sharedL7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
+                sharedL7Vid.load();
+                const l7Plane = targetEl.querySelector('.l7');
+                l7Plane.setAttribute('material', {src: sharedL7Vid});
                 l7Plane.setAttribute('visible', true);
-                l7Vid.play().catch(e => { l7Vid.muted = true; l7Vid.play(); });
+                sharedL7Vid.play().catch(e => { sharedL7Vid.muted = true; sharedL7Vid.play(); });
             });
 
             targetEl.addEventListener('targetLost', () => {
@@ -330,26 +397,46 @@
                     ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.add('visible'));
                 }
                 
-                l7Vid.pause();
-                wildcardVid.pause();
-                wildcardPlane.setAttribute('visible', false);
+                sharedL7Vid.pause();
+                sharedWildcardVid.pause();
+                targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
+
+                const l1Plane = targetEl.querySelector('.l1');
+                l1Plane.removeAttribute('proximity-door');
+                l1Plane.removeAttribute('animation__door');
+                l1Plane.setAttribute('position', '0 0 0.02');
+
+                const l2Plane = targetEl.querySelector('.l2');
+                l2Plane.removeAttribute('animation__color');
+                l2Plane.removeAttribute('animation__op');
+                l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
                 l3Plane.removeAttribute('animation');
+                l3Plane.removeAttribute('animation__color');
+                l3Plane.removeAttribute('animation__op');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
+                l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                 const l4Plane = targetEl.querySelector('.l4');
                 l4Plane.removeAttribute('circular-motion');
+                l4Plane.removeAttribute('animation__scale');
                 l4Plane.setAttribute('position', '0 0 -1.90');
+                l4Plane.setAttribute('scale', '1 1 1');
 
-                // TWEAK 1: Cleanup mapped to smooth-bob
                 const l5Plane = targetEl.querySelector('.l5');
                 l5Plane.removeAttribute('smooth-bob');
                 l5Plane.setAttribute('position', '0 0 -2.20');
 
-                l7Vid.muted = false;
+                const l6Plane = targetEl.querySelector('.l6');
+                l6Plane.removeAttribute('evil-glitch');
+                l6Plane.setAttribute('opacity', 1);
+
+                if (sfxEvilLaugh) { sfxEvilLaugh.pause(); }
+
+                sharedL7Vid.muted = false;
             });
         };
 
@@ -367,20 +454,60 @@
             if (sfxStart) sfxStart.play();
             if (sfxStartup) setTimeout(() => sfxStartup.play(), 2000);
             
+            // Safe mobile audio unlocking
+            if (sfxSiren) { sfxSiren.play().then(() => sfxSiren.pause()).catch(e=>{}); }
+            if (sfxEvilLaugh) { sfxEvilLaugh.play().then(() => sfxEvilLaugh.pause()).catch(e=>{}); }
+            sharedL7Vid.play().then(() => sharedL7Vid.pause()).catch(e=>{});
+            sharedWildcardVid.play().then(() => sharedWildcardVid.pause()).catch(e=>{});
+            
             startScreen.classList.add('hidden');
             overlay.classList.add('visible'); 
             scannerUi.classList.add('visible');
             ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.add('visible'));
             isStarted = true;
-            
-            Object.values(videoPool).forEach(v => v.load());
         });
 
         let touchPoints = [];
         let isDrawing = false;
+        let easterEggTaps = [];
+        let isEasterEggRunning = false;
+
+        const handleCenterTap = (clientX, clientY) => {
+            if (!isStarted || isEasterEggRunning || activeTargetIndex !== null) return;
+            
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const halfScannerWidth = window.innerWidth * 0.3; 
+            
+            if (Math.abs(clientX - cx) <= halfScannerWidth && Math.abs(clientY - cy) <= halfScannerWidth) {
+                const now = Date.now();
+                easterEggTaps.push(now);
+                easterEggTaps = easterEggTaps.filter(t => now - t <= 3000);
+                
+                if (easterEggTaps.length >= 9) {
+                    easterEggTaps = []; 
+                    triggerEasterEgg();
+                }
+            }
+        };
+
+        function triggerEasterEgg() {
+            isEasterEggRunning = true;
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+            const eggOverlay = document.getElementById('easter-egg-overlay');
+            eggOverlay.classList.add('active');
+            
+            setTimeout(() => {
+                eggOverlay.classList.remove('active');
+                isEasterEggRunning = false;
+            }, 6000);
+        }
 
         window.addEventListener('pointerdown', (e) => {
-            if (!isStarted || activeTargetIndex === null || isWildcardSequenceRunning) return;
+            if (!isStarted) return;
+            handleCenterTap(e.clientX, e.clientY);
+
+            if (activeTargetIndex === null || isWildcardSequenceRunning) return;
             isDrawing = true;
             touchPoints = [{x: e.clientX, y: e.clientY}];
         });
@@ -430,34 +557,49 @@
             feedback.style.opacity = '1';
             setTimeout(() => feedback.style.opacity = '0', 3000);
 
-            const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
-
-            if (data.l3Idle === 'hover') {
-                l3Plane.removeAttribute('animation__hover');
-            }
+            const activeWildcardPlane = document.querySelector(`#target-${targetIndex} .wildcard-layer`);
+            activeWildcardPlane.setAttribute('width', data.wildcardW);
+            activeWildcardPlane.setAttribute('height', data.wildcardH);
+            activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
 
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
-            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
-            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            sharedWildcardVid.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            activeWildcardPlane.setAttribute('material', {src: sharedWildcardVid});
             
-            activeWildcardVideo.muted = false; 
-            const playPromise = activeWildcardVideo.play();
+            sharedWildcardVid.muted = false; 
+            const playPromise = sharedWildcardVid.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    activeWildcardVideo.pause(); 
+                    sharedWildcardVid.pause(); 
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
-            if (data.l3AnimType === 'slideLeft') {
+            if (data.designLogic === 'cyberpunk') {
+                const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
+                l3Plane.removeAttribute('animation__hover');
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
                 setTimeout(() => finalizeWildcard(data), 800);
-            } else if (data.l3AnimType === 'zoomIn') {
-                l3Plane.setAttribute('position', '0 0 -1.60');
-                l3Plane.setAttribute('animation', 'property: scale; to: 2 2 2; dur: 800; easing: easeInOutQuad');
-                setTimeout(() => finalizeWildcard(data), 800);
-            } else {
-                l3Plane.setAttribute('position', '0 0 -1.60');
+            } 
+            else if (data.designLogic === 'containment') {
+                const l2Plane = document.querySelector(`#target-${targetIndex} .l2`);
+                const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
+                const l4Plane = document.querySelector(`#target-${targetIndex} .l4`);
+                const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
+
+                l6Plane.setAttribute('evil-glitch', 'active: false');
+                if (sfxEvilLaugh) sfxEvilLaugh.muted = true;
+
+                l2Plane.setAttribute('animation__color', 'property: components.material.material.color; type: color; to: #ff0000; dur: 800');
+                l2Plane.setAttribute('animation__op', 'property: material.opacity; to: 0; dur: 800');
+                l3Plane.setAttribute('animation__color', 'property: components.material.material.color; type: color; to: #ff0000; dur: 800');
+                l3Plane.setAttribute('animation__op', 'property: material.opacity; to: 0; dur: 800');
+
+                setTimeout(() => {
+                    l4Plane.setAttribute('animation__scale', 'property: scale; to: 2 2 2; dur: 800; easing: easeInOutQuad');
+                    setTimeout(() => finalizeWildcard(data), 800);
+                }, 800);
+            }
+            else {
                 finalizeWildcard(data);
             }
         }
@@ -465,13 +607,12 @@
         function finalizeWildcard(data) {
             if (!isWildcardSequenceRunning) return; 
 
-            if (activeLayer7Video) activeLayer7Video.muted = true;
+            if (sharedL7Vid) sharedL7Vid.muted = true;
+            document.querySelector(`#target-${activeTargetIndex} .wildcard-layer`).setAttribute('visible', true);
             
-            activeWildcardPlane.setAttribute('visible', true);
-            
-            activeWildcardVideo.play().catch(e => { 
-                activeWildcardVideo.muted = true; 
-                activeWildcardVideo.play(); 
+            sharedWildcardVid.play().catch(e => { 
+                sharedWildcardVid.muted = true; 
+                sharedWildcardVid.play(); 
             });
         }
     </script>
