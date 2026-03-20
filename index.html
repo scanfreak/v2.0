@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.24 - SWIPE GESTURE DOOR</title>
+    <title>SCANFREAK AR V2.25 - WILDCARD & SWIPE FIX</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -81,7 +81,6 @@
         html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
         a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
 
-        /* V1 START SCREEN & LOGO */
         #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
         #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
@@ -102,7 +101,6 @@
         @keyframes pulseBtn { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translateY(-50%) scale(1); } }
         #start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
 
-        /* V1 UI ELEMENTS */
         #scanner-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60vw; height: 60vw; max-width: 320px; max-height: 320px; border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
         #scanner-ui.visible { opacity: 1; }
         .corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
@@ -223,8 +221,6 @@
             <audio id="sfx-flash" src="assets/sfx/flash.mp3" preload="auto"></audio>
             <audio id="sfx-info" src="assets/sfx/info.mp3" preload="auto"></audio>
             <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
-
-            <video id="shared-wildcard-vid" src="" crossOrigin="anonymous" playsinline></video>
         </a-assets>
 
         <script>
@@ -330,8 +326,10 @@
         const videoSourceNodes = {}; 
         
         let isWildcardSequenceRunning = false;
+        
+        // FIX: Wildcard Pool Restored to prevent A-Frame single-video swap bugs
         const videoPool = {}; 
-        const sharedWildcardVid = document.getElementById('shared-wildcard-vid');
+        const wildcardPool = {}; 
 
         let easterEggTaps = [];
         let isEasterEggRunning = false;
@@ -354,7 +352,7 @@
         const findCameraVideo = () => {
             cameraVideo = Array.from(document.querySelectorAll('video')).find(v => 
                 v.style.position === 'absolute' || 
-                (v.videoWidth > 0 && v.style.display !== 'none' && !Object.values(videoPool).includes(v))
+                (v.videoWidth > 0 && v.style.display !== 'none' && !Object.values(videoPool).includes(v) && !Object.values(wildcardPool).includes(v))
             );
         };
 
@@ -408,11 +406,14 @@
                 videoSourceNodes[activeTargetIndex].connect(audioContext.destination);
             }
             
-            if (!videoSourceNodes['wildcard']) {
-                videoSourceNodes['wildcard'] = audioContext.createMediaElementSource(sharedWildcardVid);
+            if (activeTargetIndex !== null && wildcardPool[activeTargetIndex]) {
+                const activeWildcard = wildcardPool[activeTargetIndex];
+                if (!videoSourceNodes['wildcard_' + activeTargetIndex]) {
+                    videoSourceNodes['wildcard_' + activeTargetIndex] = audioContext.createMediaElementSource(activeWildcard);
+                }
+                videoSourceNodes['wildcard_' + activeTargetIndex].connect(audioDest);
+                videoSourceNodes['wildcard_' + activeTargetIndex].connect(audioContext.destination);
             }
-            videoSourceNodes['wildcard'].connect(audioDest);
-            videoSourceNodes['wildcard'].connect(audioContext.destination);
 
             const captureLoop = () => {
                 if (!isRecording) return;
@@ -533,48 +534,6 @@
         infoBtn.addEventListener('click', () => { triggerHaptic(); sfxInfo.currentTime = 0; sfxInfo.play(); showMessage(document.getElementById('info-message')); });
         document.getElementById('info-message').addEventListener('click', () => { document.getElementById('info-message').classList.remove('visible'); });
 
-        sharedWildcardVid.addEventListener('ended', () => {
-            if (activeTargetIndex === null) return;
-            const data = COLLECTION_DATA[activeTargetIndex];
-            const targetEl = document.querySelector(`#target-${activeTargetIndex}`);
-            
-            targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
-            isWildcardSequenceRunning = false;
-            videoPool[activeTargetIndex].muted = false;
-
-            if (data.designLogic === 'cyberpunk') {
-                const l3Plane = targetEl.querySelector('.l3');
-                l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
-                setTimeout(() => {
-                    if (activeTargetIndex !== null) {
-                        l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
-                    }
-                }, 800);
-            }
-
-            if (data.designLogic === 'containment') {
-                const l2Plane = targetEl.querySelector('.l2');
-                const l3Plane = targetEl.querySelector('.l3');
-                const l4Plane = targetEl.querySelector('.l4');
-                const l6Plane = targetEl.querySelector('.l6');
-
-                l4Plane.setAttribute('animation__scale', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
-
-                setTimeout(() => {
-                    if (activeTargetIndex === null) return;
-                    l2Plane.removeAttribute('animation__color');
-                    l2Plane.removeAttribute('animation__op');
-                    l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
-
-                    l3Plane.removeAttribute('animation__color');
-                    l3Plane.removeAttribute('animation__op');
-                    l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
-
-                    l6Plane.setAttribute('evil-glitch', 'active: true');
-                    if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
-                }, 800);
-            }
-        });
 
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
@@ -594,6 +553,55 @@
             l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
+
+            // FIX: Dedicated wildcard video element to prevent A-Frame texture bug
+            const wildcardPlane = targetEl.querySelector('.wildcard-layer');
+            const wildcardVid = document.createElement('video');
+            wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
+            wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
+            document.body.appendChild(wildcardVid);
+            wildcardPool[index] = wildcardVid;
+
+            wildcardVid.addEventListener('ended', () => {
+                if (activeTargetIndex !== index) return;
+                
+                wildcardPlane.setAttribute('visible', false);
+                isWildcardSequenceRunning = false;
+                videoPool[index].muted = false;
+
+                if (data.designLogic === 'cyberpunk') {
+                    const l3Plane = targetEl.querySelector('.l3');
+                    l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
+                    setTimeout(() => {
+                        if (activeTargetIndex === index) {
+                            l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
+                        }
+                    }, 800);
+                }
+
+                if (data.designLogic === 'containment') {
+                    const l2Plane = targetEl.querySelector('.l2');
+                    const l3Plane = targetEl.querySelector('.l3');
+                    const l4Plane = targetEl.querySelector('.l4');
+                    const l6Plane = targetEl.querySelector('.l6');
+
+                    l4Plane.setAttribute('animation__scale', 'property: scale; to: 1 1 1; dur: 800; easing: easeInOutQuad');
+
+                    setTimeout(() => {
+                        if (activeTargetIndex !== index) return;
+                        l2Plane.removeAttribute('animation__color');
+                        l2Plane.removeAttribute('animation__op');
+                        l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+
+                        l3Plane.removeAttribute('animation__color');
+                        l3Plane.removeAttribute('animation__op');
+                        l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+
+                        l6Plane.setAttribute('evil-glitch', 'active: true');
+                        if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
+                    }, 800);
+                }
+            });
 
             targetEl.addEventListener('targetFound', () => {
                 if (!isStarted) return; 
@@ -638,7 +646,7 @@
                 }
                 
                 videoPool[index].pause();
-                sharedWildcardVid.pause();
+                wildcardPool[index].pause();
                 targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
 
                 currentScale = 1;
@@ -699,7 +707,6 @@
             if (sfxSiren) { sfxSiren.play().then(() => sfxSiren.pause()).catch(e=>{}); }
             if (sfxEvilLaugh) { sfxEvilLaugh.play().then(() => sfxEvilLaugh.pause()).catch(e=>{}); }
             if (sfxDoorWhoosh) { sfxDoorWhoosh.play().then(() => sfxDoorWhoosh.pause()).catch(e=>{}); }
-            sharedWildcardVid.play().then(() => sharedWildcardVid.pause()).catch(e=>{});
             
             startScreen.classList.add('hidden');
             overlay.classList.add('visible'); scannerUi.classList.add('visible');
@@ -795,30 +802,30 @@
         function analyzeGesture(pts) {
             if (pts.length < 5) return false; 
             
+            // FIX 1: Always check for Circle priority FIRST to prevent swipe misfires
+            if (pts.length >= 20) {
+                let cx = 0, cy = 0; pts.forEach(p => { cx += p.x; cy += p.y; }); cx /= pts.length; cy /= pts.length;
+                let totalAngle = 0; let prevAngle = Math.atan2(pts[0].y - cy, pts[0].x - cx);
+                for (let i = 1; i < pts.length; i++) {
+                    let angle = Math.atan2(pts[i].y - cy, pts[i].x - cx);
+                    let delta = angle - prevAngle;
+                    if (delta > Math.PI) delta -= 2 * Math.PI; if (delta < -Math.PI) delta += 2 * Math.PI;
+                    totalAngle += delta; prevAngle = angle;
+                }
+                if (Math.abs(totalAngle) > (3.5 * Math.PI)) return 'circle';
+            }
+            
+            // FIX 2: Only fallback to checking straight horizontal swipe if it wasn't a circle
             let dx = pts[pts.length - 1].x - pts[0].x;
             let dy = pts[pts.length - 1].y - pts[0].y;
             
-            // Check for horizontal swipe (Must be mostly straight and > 100px long)
-            if (Math.abs(dx) > 100 && Math.abs(dx) > Math.abs(dy) * 2) {
+            if (Math.abs(dx) > 100 && Math.abs(dx) > Math.abs(dy) * 1.5) {
                 return dx < 0 ? 'left' : 'right';
             }
-            
-            // Check for Wildcard Circle
-            if (pts.length < 20) return false; 
-            let cx = 0, cy = 0; pts.forEach(p => { cx += p.x; cy += p.y; }); cx /= pts.length; cy /= pts.length;
-            let totalAngle = 0; let prevAngle = Math.atan2(pts[0].y - cy, pts[0].x - cx);
-            for (let i = 1; i < pts.length; i++) {
-                let angle = Math.atan2(pts[i].y - cy, pts[i].x - cx);
-                let delta = angle - prevAngle;
-                if (delta > Math.PI) delta -= 2 * Math.PI; if (delta < -Math.PI) delta += 2 * Math.PI;
-                totalAngle += delta; prevAngle = angle;
-            }
-            if (Math.abs(totalAngle) > (3.5 * Math.PI)) return 'circle';
 
             return false;
         }
 
-        // --- NEW MANUAL DOOR LOGIC ---
         function handleSwipeAction(direction, targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data || data.designLogic !== 'containment') return;
@@ -854,14 +861,16 @@
             activeWildcardPlane.setAttribute('height', data.wildcardH);
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
 
+            // FIX: Using dedicated wildcard pool to prevent A-Frame single-video texture bugs
+            const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
-            sharedWildcardVid.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('material', {src: sharedWildcardVid});
+            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             
-            sharedWildcardVid.muted = false; 
-            const playPromise = sharedWildcardVid.play();
+            activeWildcardVideo.muted = false; 
+            const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
-                playPromise.then(() => { sharedWildcardVid.pause(); }).catch(e => console.log("Unlock handled gracefully"));
+                playPromise.then(() => { activeWildcardVideo.pause(); }).catch(e => console.log("Unlock handled gracefully"));
             }
 
             if (data.designLogic === 'cyberpunk') {
@@ -896,7 +905,9 @@
             if (!isWildcardSequenceRunning) return; 
             if (videoPool[targetIndex]) videoPool[targetIndex].muted = true;
             document.querySelector(`#target-${targetIndex} .wildcard-layer`).setAttribute('visible', true);
-            sharedWildcardVid.play().catch(e => { sharedWildcardVid.muted = true; sharedWildcardVid.play(); });
+            
+            const activeWildcardVideo = wildcardPool[targetIndex];
+            activeWildcardVideo.play().catch(e => { activeWildcardVideo.muted = true; activeWildcardVideo.play(); });
         }
     </script>
 </body>
