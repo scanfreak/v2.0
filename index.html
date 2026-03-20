@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.19 - PROXIMITY PHYSICS FIX</title>
+    <title>SCANFREAK AR V2.20 - 1FT PROXIMITY DOOR</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -76,18 +76,16 @@
             }
         });
 
-        // FIX: Proximity Door completely rewritten using robust Lerp Physics
         AFRAME.registerComponent('proximity-door', {
             schema: { active: {type: 'boolean', default: false} },
             init: function() {
                 this.isOpen = false;
-                this.targetX = 0; // Defaults to closed
+                this.targetX = 0; 
                 this.doorAudio = document.getElementById('sfx-door-whoosh');
                 this.vector = new THREE.Vector3();
-                this.camDir = new THREE.Vector3(0, 0, -1); // Camera is statically looking -Z in MindAR
+                this.camDir = new THREE.Vector3(0, 0, -1); 
             },
             tick: function() {
-                // 1. Smooth Linear Interpolation (Lerp) sliding physics
                 let currentX = this.el.object3D.position.x;
                 if (Math.abs(this.targetX - currentX) > 0.001) {
                     this.el.object3D.position.x += (this.targetX - currentX) * 0.12; 
@@ -96,39 +94,36 @@
                 if(!this.data.active) {
                     if (this.isOpen) {
                         this.isOpen = false;
-                        this.targetX = 0; // Snap shut if tracking is lost
+                        this.targetX = 0; 
                     }
                     return;
                 }
 
-                // 2. Calculate Distance (Camera is at 0,0,0 so target's vector length is the distance)
                 this.el.parentEl.object3D.getWorldPosition(this.vector);
                 let dist = this.vector.length();
                 
-                // 3. Calculate Viewing Angle
                 let normal = new THREE.Vector3(0, 0, 1);
                 normal.transformDirection(this.el.parentEl.object3D.matrixWorld).normalize();
                 let angleDot = Math.abs(normal.dot(this.camDir)); 
                 let isExtremeAngle = angleDot < 0.45; 
 
-                // FIX: Calibrated thresholds for real-world MindAR scaling
-                let shouldBeOpen = dist < 2.0 || isExtremeAngle; 
-                let shouldBeClosed = dist > 2.6 && !isExtremeAngle; 
+                // FIX: Tightened threshold. < 1.2 is approx 1ft away from a standard t-shirt graphic
+                let shouldBeOpen = dist < 1.2 || isExtremeAngle; 
+                let shouldBeClosed = dist > 1.8 && !isExtremeAngle; 
 
-                // 4. Trigger State Changes
                 if (shouldBeOpen && !this.isOpen) {
                     this.isOpen = true;
-                    this.targetX = -1.05; // Set target to left slide
+                    this.targetX = -1.05; 
                     if(this.doorAudio) { 
                         this.doorAudio.currentTime = 0; 
-                        this.doorAudio.play().catch(e => console.log("Audio block ignored")); 
+                        this.doorAudio.play().catch(e => {}); 
                     }
                 } else if (shouldBeClosed && this.isOpen) {
                     this.isOpen = false;
-                    this.targetX = 0; // Set target to right slide (close)
+                    this.targetX = 0; 
                     if(this.doorAudio) { 
                         this.doorAudio.currentTime = 0; 
-                        this.doorAudio.play().catch(e => console.log("Audio block ignored")); 
+                        this.doorAudio.play().catch(e => {}); 
                     }
                 }
             }
@@ -317,8 +312,8 @@
 
     <script>
         const BASE_DATA = [
-            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
@@ -334,7 +329,6 @@
         const COLLECTION_DATA = {};
         BASE_DATA.forEach((data, index) => { COLLECTION_DATA[index] = data; });
 
-        // V1 UI Variables
         const sceneEl = document.querySelector('a-scene');
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -356,7 +350,6 @@
         const downloadYes = document.getElementById('download-yes');
         const downloadNo = document.getElementById('download-no');
 
-        // V1 Audio Elements
         const sfxStart = document.getElementById('sfx-start');
         const sfxStartup = document.getElementById('sfx-startup');
         const sfxHelp = document.getElementById('sfx-help');
@@ -368,7 +361,6 @@
         const sfxSiren = document.getElementById('sfx-siren');
         const sfxEvilLaugh = document.getElementById('sfx-evil-laugh');
 
-        // V1 State Management
         let isStarted = false;
         let msgTimeout;
         let currentScale = 1;
@@ -379,7 +371,6 @@
         let track = null;
         let cameraVideo = null;
 
-        // V1 Recording Setup
         let mediaRecorder;
         let recordedChunks = [];
         let isRecording = false;
@@ -390,12 +381,10 @@
         let audioDest;
         const videoSourceNodes = {}; 
         
-        // V2 Choreography Variables
         let isWildcardSequenceRunning = false;
         const videoPool = {}; 
         const sharedWildcardVid = document.getElementById('shared-wildcard-vid');
 
-        // Easter Egg
         let easterEggTaps = [];
         let isEasterEggRunning = false;
 
@@ -421,7 +410,6 @@
             );
         };
 
-        // --- V1 FLASH LOGIC ---
         const toggleFlash = async () => {
             triggerHaptic(); sfxFlash.currentTime = 0; sfxFlash.play();
             try {
@@ -435,7 +423,6 @@
         };
         flashBtn.addEventListener('click', toggleFlash);
 
-        // --- V1 RECORDING LOGIC ---
         const toggleRecording = () => {
             triggerHaptic(); sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             if (!isRecording) startRecording(); else stopRecording();
@@ -462,9 +449,8 @@
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 const micSource = audioContext.createMediaStreamSource(micStream);
                 micSource.connect(audioDest);
-            } catch (e) { console.log("Mic access denied", e); }
+            } catch (e) { }
 
-            // Connect Base Video to Recording
             if (activeTargetIndex !== null && videoPool[activeTargetIndex]) {
                 const activeVideo = videoPool[activeTargetIndex];
                 if (!videoSourceNodes[activeTargetIndex]) {
@@ -474,7 +460,6 @@
                 videoSourceNodes[activeTargetIndex].connect(audioContext.destination);
             }
             
-            // Connect Wildcard Video to Recording
             if (!videoSourceNodes['wildcard']) {
                 videoSourceNodes['wildcard'] = audioContext.createMediaElementSource(sharedWildcardVid);
             }
@@ -551,7 +536,6 @@
         };
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kickstartActiveVideo(); });
 
-        // --- V1 SCREENSHOT LOGIC ---
         screenshotBtn.addEventListener('click', async () => {
             triggerHaptic(); sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             flashOverlay.classList.remove('flash-active'); void flashOverlay.offsetWidth; flashOverlay.classList.add('flash-active');
@@ -574,7 +558,6 @@
             };
         });
 
-        // --- V1 NATIVE SHARE LOGIC ---
         shareBtn.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation(); triggerHaptic(); sfxShare.currentTime = 0; sfxShare.play();
             const shareText = "Got my hands on some wild merch. It's freakin on another level - it literally comes alive! You've got to experience this immersive AR for yourself 操";
@@ -596,15 +579,12 @@
             } catch (err) { navigator.clipboard.writeText(shareText + " " + shareUrl).then(() => alert("Link copied to clipboard!")); }
         });
 
-        // V1 Basic UI Listeners
         helpBtn.addEventListener('click', () => { triggerHaptic(); sfxHelp.play(); showMessage(document.getElementById('help-message')); });
         document.getElementById('help-message').addEventListener('click', () => document.getElementById('help-message').classList.remove('visible'));
         ctaBtn.addEventListener('click', (e) => { e.preventDefault(); triggerHaptic(); sfxStore.currentTime = 0; sfxStore.play(); setTimeout(() => { window.open('https://scanfreak.myshopify.com', '_blank'); }, 150); });
         infoBtn.addEventListener('click', () => { triggerHaptic(); sfxInfo.currentTime = 0; sfxInfo.play(); showMessage(document.getElementById('info-message')); });
         document.getElementById('info-message').addEventListener('click', () => { document.getElementById('info-message').classList.remove('visible'); });
 
-
-        // --- WILDCARD END SEQUENCE ---
         sharedWildcardVid.addEventListener('ended', () => {
             if (activeTargetIndex === null) return;
             const data = COLLECTION_DATA[activeTargetIndex];
@@ -648,7 +628,6 @@
             }
         });
 
-        // --- AR TARGET TRACKING ---
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
             const targetEl = document.querySelector(`#target-${index}`);
@@ -716,7 +695,6 @@
                 sharedWildcardVid.pause();
                 targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
 
-                // V1: Reset wrapper Zoom scale
                 currentScale = 1;
                 targetEl.querySelector('.layer-wrapper').setAttribute('scale', '1 1 1');
 
@@ -785,7 +763,6 @@
             findCameraVideo();
         });
 
-        // --- V1 PINCH TO ZOOM (PARALLAX SAFE) ---
         window.addEventListener('touchstart', (e) => { 
             if (e.touches.length === 2 && activeTargetIndex !== null) {
                 initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); 
@@ -802,7 +779,6 @@
             }
         });
 
-        // --- COMBINED V1 EASTER EGG & V2 GESTURE ENGINE ---
         let touchPoints = [];
         let isDrawing = false;
 
