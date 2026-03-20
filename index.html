@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.18 - V1 BASE INTEGRATION</title>
+    <title>SCANFREAK AR V2.19 - PROXIMITY PHYSICS FIX</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -76,44 +76,60 @@
             }
         });
 
+        // FIX: Proximity Door completely rewritten using robust Lerp Physics
         AFRAME.registerComponent('proximity-door', {
             schema: { active: {type: 'boolean', default: false} },
             init: function() {
                 this.isOpen = false;
-                this.camera = document.querySelector('a-camera').object3D;
+                this.targetX = 0; // Defaults to closed
                 this.doorAudio = document.getElementById('sfx-door-whoosh');
                 this.vector = new THREE.Vector3();
-                this.camDir = new THREE.Vector3();
+                this.camDir = new THREE.Vector3(0, 0, -1); // Camera is statically looking -Z in MindAR
             },
             tick: function() {
+                // 1. Smooth Linear Interpolation (Lerp) sliding physics
+                let currentX = this.el.object3D.position.x;
+                if (Math.abs(this.targetX - currentX) > 0.001) {
+                    this.el.object3D.position.x += (this.targetX - currentX) * 0.12; 
+                }
+
                 if(!this.data.active) {
                     if (this.isOpen) {
-                        this.el.setAttribute('position', '0 0 0.02'); 
                         this.isOpen = false;
+                        this.targetX = 0; // Snap shut if tracking is lost
                     }
                     return;
                 }
 
+                // 2. Calculate Distance (Camera is at 0,0,0 so target's vector length is the distance)
                 this.el.parentEl.object3D.getWorldPosition(this.vector);
-                let dist = this.camera.position.distanceTo(this.vector);
+                let dist = this.vector.length();
                 
-                this.camera.getWorldDirection(this.camDir);
+                // 3. Calculate Viewing Angle
                 let normal = new THREE.Vector3(0, 0, 1);
                 normal.transformDirection(this.el.parentEl.object3D.matrixWorld).normalize();
                 let angleDot = Math.abs(normal.dot(this.camDir)); 
                 let isExtremeAngle = angleDot < 0.45; 
 
-                let shouldBeOpen = dist < 2.5 || isExtremeAngle; 
-                let shouldBeClosed = dist > 3.2 && !isExtremeAngle; 
+                // FIX: Calibrated thresholds for real-world MindAR scaling
+                let shouldBeOpen = dist < 2.0 || isExtremeAngle; 
+                let shouldBeClosed = dist > 2.6 && !isExtremeAngle; 
 
+                // 4. Trigger State Changes
                 if (shouldBeOpen && !this.isOpen) {
                     this.isOpen = true;
-                    this.el.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
-                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play(); }
+                    this.targetX = -1.05; // Set target to left slide
+                    if(this.doorAudio) { 
+                        this.doorAudio.currentTime = 0; 
+                        this.doorAudio.play().catch(e => console.log("Audio block ignored")); 
+                    }
                 } else if (shouldBeClosed && this.isOpen) {
                     this.isOpen = false;
-                    this.el.setAttribute('animation__door', 'property: position; to: 0 0 0.02; dur: 800; easing: easeOutQuad');
-                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play(); }
+                    this.targetX = 0; // Set target to right slide (close)
+                    if(this.doorAudio) { 
+                        this.doorAudio.currentTime = 0; 
+                        this.doorAudio.play().catch(e => console.log("Audio block ignored")); 
+                    }
                 }
             }
         });
