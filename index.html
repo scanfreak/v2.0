@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.25 - WILDCARD & SWIPE FIX</title>
+    <title>SCANFREAK AR V2.26 - DOOR FRAMES & CHOREOGRAPHY</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -81,6 +81,7 @@
         html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
         a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
 
+        /* V1 START SCREEN & LOGO */
         #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
         #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
@@ -101,6 +102,7 @@
         @keyframes pulseBtn { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translateY(-50%) scale(1); } }
         #start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
 
+        /* V1 UI ELEMENTS */
         #scanner-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60vw; height: 60vw; max-width: 320px; max-height: 320px; border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
         #scanner-ui.visible { opacity: 1; }
         .corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
@@ -221,6 +223,8 @@
             <audio id="sfx-flash" src="assets/sfx/flash.mp3" preload="auto"></audio>
             <audio id="sfx-info" src="assets/sfx/info.mp3" preload="auto"></audio>
             <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
+
+            <video id="shared-wildcard-vid" src="" crossOrigin="anonymous" playsinline></video>
         </a-assets>
 
         <script>
@@ -235,7 +239,9 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
+                        <a-plane class="l1-frame" width="1.05" height="1.866" position="0 0 0.015" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        
                         <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
@@ -254,19 +260,20 @@
     </a-scene>
 
     <script>
+        // ADDED FLAGS: Smart engine logic to handle missing frames natively
         const BASE_DATA = [
-            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
-            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 }
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: true, hasL1Frame: false },
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, hasL7Frame: true, hasL1Frame: true },
+            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
+            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false }
         ];
 
         const COLLECTION_DATA = {};
@@ -326,8 +333,6 @@
         const videoSourceNodes = {}; 
         
         let isWildcardSequenceRunning = false;
-        
-        // FIX: Wildcard Pool Restored to prevent A-Frame single-video swap bugs
         const videoPool = {}; 
         const wildcardPool = {}; 
 
@@ -544,7 +549,10 @@
                 const plane = targetEl.querySelector(`.l${l}`);
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
-            if (data.id === '01') targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+            
+            // NEW: Frame Injection logic strictly based on BASE_DATA flags
+            if (data.hasL7Frame) targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+            if (data.hasL1Frame) targetEl.querySelector('.l1-frame').setAttribute('src', `parallax/${data.folder}/layer1_frame_${data.id}.png`);
 
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
@@ -554,7 +562,6 @@
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
 
-            // FIX: Dedicated wildcard video element to prevent A-Frame texture bug
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
@@ -579,6 +586,7 @@
                     }, 800);
                 }
 
+                // NEW: Containment Cell Complex Event Cascades
                 if (data.designLogic === 'containment') {
                     const l2Plane = targetEl.querySelector('.l2');
                     const l3Plane = targetEl.querySelector('.l3');
@@ -616,7 +624,8 @@
                 screenshotBtn.classList.add('visible'); recordBtn.classList.add('visible'); zoomDisplay.classList.add('visible');
 
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
-                if (data.id === '01') targetEl.querySelector('.l7-frame').setAttribute('visible', true);
+                if (data.hasL7Frame) targetEl.querySelector('.l7-frame').setAttribute('visible', true);
+                if (data.hasL1Frame) targetEl.querySelector('.l1-frame').setAttribute('visible', true);
                 
                 if (data.designLogic === 'cyberpunk') {
                     targetEl.querySelector('.l3').setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
@@ -733,7 +742,6 @@
             }
         });
 
-        // --- GESTURE ENGINE (Taps, Circles, and Swipes) ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -802,7 +810,6 @@
         function analyzeGesture(pts) {
             if (pts.length < 5) return false; 
             
-            // FIX 1: Always check for Circle priority FIRST to prevent swipe misfires
             if (pts.length >= 20) {
                 let cx = 0, cy = 0; pts.forEach(p => { cx += p.x; cy += p.y; }); cx /= pts.length; cy /= pts.length;
                 let totalAngle = 0; let prevAngle = Math.atan2(pts[0].y - cy, pts[0].x - cx);
@@ -815,7 +822,6 @@
                 if (Math.abs(totalAngle) > (3.5 * Math.PI)) return 'circle';
             }
             
-            // FIX 2: Only fallback to checking straight horizontal swipe if it wasn't a circle
             let dx = pts[pts.length - 1].x - pts[0].x;
             let dy = pts[pts.length - 1].y - pts[0].y;
             
@@ -861,7 +867,6 @@
             activeWildcardPlane.setAttribute('height', data.wildcardH);
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
 
-            // FIX: Using dedicated wildcard pool to prevent A-Frame single-video texture bugs
             const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
