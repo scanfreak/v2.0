@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.23 - DOOR PHYSICS LOCK</title>
+    <title>SCANFREAK AR V2.24 - SWIPE GESTURE DOOR</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -72,84 +72,6 @@
                     this.el.setAttribute('opacity', Math.random() > 0.5 ? 0.2 : 0.7);
                 } else {
                     this.el.setAttribute('opacity', 1);
-                }
-            }
-        });
-
-        // FIX: Proximity Door with a 2.5-second "Entrance Lock" to prevent instant-cancellation
-        AFRAME.registerComponent('proximity-door', {
-            schema: { active: {type: 'boolean', default: false} },
-            init: function() {
-                this.isOpen = false;
-                this.isLocked = false;
-                this.doorAudio = document.getElementById('sfx-door-whoosh');
-                this.targetEntity = this.el.closest('[mindar-image-target]'); 
-                this.camDir = new THREE.Vector3(0, 0, -1); 
-            },
-            update: function(oldData) {
-                if (this.data.active && !oldData.active) {
-                    this.isOpen = true;
-                    this.isLocked = true; // Lock the sensor!
-                    
-                    this.el.setAttribute('animation__door', {
-                        property: 'position', 
-                        to: '-1.05 0 0.02', 
-                        dur: 800, 
-                        easing: 'easeOutQuad'
-                    });
-
-                    if(this.doorAudio) { 
-                        this.doorAudio.currentTime = 0; 
-                        this.doorAudio.play().catch(e => {}); 
-                    }
-
-                    // Unlock the proximity sensor after 2.5 seconds
-                    if (this.lockTimeout) clearTimeout(this.lockTimeout);
-                    this.lockTimeout = setTimeout(() => { this.isLocked = false; }, 2500);
-
-                } else if (!this.data.active) {
-                    // Clean reset on target lost
-                    this.isOpen = false;
-                    this.isLocked = false;
-                    this.el.removeAttribute('animation__door');
-                    this.el.setAttribute('position', '0 0 0.02');
-                }
-            },
-            tick: function() {
-                // If the door is locked from the entrance animation, do nothing!
-                if(!this.data.active || !this.targetEntity || this.isLocked) return;
-
-                let targetWorldPos = new THREE.Vector3();
-                this.targetEntity.object3D.getWorldPosition(targetWorldPos);
-                let dist = targetWorldPos.length(); 
-                
-                let normal = new THREE.Vector3(0, 0, 1);
-                normal.transformDirection(this.targetEntity.object3D.matrixWorld).normalize();
-                let angleDot = Math.abs(normal.dot(this.camDir)); 
-                let isExtremeAngle = angleDot < 0.45; 
-
-                // Widened threshold bounds to prevent rapid bouncing
-                let shouldBeClosed = dist > 3.0 && !isExtremeAngle; 
-                let shouldBeOpen = dist < 2.0 || isExtremeAngle; 
-
-                if (shouldBeClosed && this.isOpen) {
-                    this.isOpen = false;
-                    this.el.setAttribute('animation__door', {
-                        property: 'position', 
-                        to: '0 0 0.02', 
-                        dur: 800, 
-                        easing: 'easeOutQuad'
-                    });
-                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play().catch(e => {}); }
-                } else if (shouldBeOpen && !this.isOpen) {
-                    this.isOpen = true;
-                    this.el.setAttribute('animation__door', {
-                        property: 'position', 
-                        to: '-1.05 0 0.02', 
-                        dur: 800, 
-                        easing: 'easeOutQuad'
-                    });
-                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play().catch(e => {}); }
                 }
             }
         });
@@ -317,7 +239,7 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
-                        <a-plane class="l1" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
@@ -354,7 +276,6 @@
         const COLLECTION_DATA = {};
         BASE_DATA.forEach((data, index) => { COLLECTION_DATA[index] = data; });
 
-        // V1 UI Variables
         const sceneEl = document.querySelector('a-scene');
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -376,7 +297,6 @@
         const downloadYes = document.getElementById('download-yes');
         const downloadNo = document.getElementById('download-no');
 
-        // V1 Audio Elements
         const sfxStart = document.getElementById('sfx-start');
         const sfxStartup = document.getElementById('sfx-startup');
         const sfxHelp = document.getElementById('sfx-help');
@@ -386,9 +306,9 @@
         const sfxFlash = document.getElementById('sfx-flash');
         const sfxInfo = document.getElementById('sfx-info');
         const sfxSiren = document.getElementById('sfx-siren');
+        const sfxDoorWhoosh = document.getElementById('sfx-door-whoosh');
         const sfxEvilLaugh = document.getElementById('sfx-evil-laugh');
 
-        // V1 State Management
         let isStarted = false;
         let msgTimeout;
         let currentScale = 1;
@@ -399,7 +319,6 @@
         let track = null;
         let cameraVideo = null;
 
-        // V1 Recording Setup
         let mediaRecorder;
         let recordedChunks = [];
         let isRecording = false;
@@ -410,12 +329,10 @@
         let audioDest;
         const videoSourceNodes = {}; 
         
-        // V2 Choreography Variables
         let isWildcardSequenceRunning = false;
         const videoPool = {}; 
         const sharedWildcardVid = document.getElementById('shared-wildcard-vid');
 
-        // Easter Egg
         let easterEggTaps = [];
         let isEasterEggRunning = false;
 
@@ -441,7 +358,6 @@
             );
         };
 
-        // --- V1 FLASH LOGIC ---
         const toggleFlash = async () => {
             triggerHaptic(); sfxFlash.currentTime = 0; sfxFlash.play();
             try {
@@ -455,7 +371,6 @@
         };
         flashBtn.addEventListener('click', toggleFlash);
 
-        // --- V1 RECORDING LOGIC ---
         const toggleRecording = () => {
             triggerHaptic(); sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             if (!isRecording) startRecording(); else stopRecording();
@@ -484,7 +399,6 @@
                 micSource.connect(audioDest);
             } catch (e) { }
 
-            // Connect Base Video to Recording
             if (activeTargetIndex !== null && videoPool[activeTargetIndex]) {
                 const activeVideo = videoPool[activeTargetIndex];
                 if (!videoSourceNodes[activeTargetIndex]) {
@@ -494,7 +408,6 @@
                 videoSourceNodes[activeTargetIndex].connect(audioContext.destination);
             }
             
-            // Connect Wildcard Video to Recording
             if (!videoSourceNodes['wildcard']) {
                 videoSourceNodes['wildcard'] = audioContext.createMediaElementSource(sharedWildcardVid);
             }
@@ -571,7 +484,6 @@
         };
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kickstartActiveVideo(); });
 
-        // --- V1 SCREENSHOT LOGIC ---
         screenshotBtn.addEventListener('click', async () => {
             triggerHaptic(); sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             flashOverlay.classList.remove('flash-active'); void flashOverlay.offsetWidth; flashOverlay.classList.add('flash-active');
@@ -594,7 +506,6 @@
             };
         });
 
-        // --- V1 NATIVE SHARE LOGIC ---
         shareBtn.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation(); triggerHaptic(); sfxShare.currentTime = 0; sfxShare.play();
             const shareText = "Got my hands on some wild merch. It's freakin on another level - it literally comes alive! You've got to experience this immersive AR for yourself 操";
@@ -616,15 +527,12 @@
             } catch (err) { navigator.clipboard.writeText(shareText + " " + shareUrl).then(() => alert("Link copied to clipboard!")); }
         });
 
-        // V1 Basic UI Listeners
         helpBtn.addEventListener('click', () => { triggerHaptic(); sfxHelp.play(); showMessage(document.getElementById('help-message')); });
         document.getElementById('help-message').addEventListener('click', () => document.getElementById('help-message').classList.remove('visible'));
         ctaBtn.addEventListener('click', (e) => { e.preventDefault(); triggerHaptic(); sfxStore.currentTime = 0; sfxStore.play(); setTimeout(() => { window.open('https://scanfreak.myshopify.com', '_blank'); }, 150); });
         infoBtn.addEventListener('click', () => { triggerHaptic(); sfxInfo.currentTime = 0; sfxInfo.play(); showMessage(document.getElementById('info-message')); });
         document.getElementById('info-message').addEventListener('click', () => { document.getElementById('info-message').classList.remove('visible'); });
 
-
-        // --- WILDCARD END SEQUENCE ---
         sharedWildcardVid.addEventListener('ended', () => {
             if (activeTargetIndex === null) return;
             const data = COLLECTION_DATA[activeTargetIndex];
@@ -656,11 +564,11 @@
                     if (activeTargetIndex === null) return;
                     l2Plane.removeAttribute('animation__color');
                     l2Plane.removeAttribute('animation__op');
-                    l2Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
+                    l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                     l3Plane.removeAttribute('animation__color');
                     l3Plane.removeAttribute('animation__op');
-                    l3Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
+                    l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                     l6Plane.setAttribute('evil-glitch', 'active: true');
                     if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
@@ -668,7 +576,6 @@
             }
         });
 
-        // --- AR TARGET TRACKING ---
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
             const targetEl = document.querySelector(`#target-${index}`);
@@ -710,10 +617,8 @@
                 }
 
                 if (data.designLogic === 'containment') {
-                    targetEl.querySelector('.l1').setAttribute('proximity-door', 'active: true');
                     targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
                     if (sfxEvilLaugh) { sfxEvilLaugh.muted = false; sfxEvilLaugh.play(); }
-                    if (sfxSiren) { sfxSiren.currentTime = 0; sfxSiren.play(); }
                 }
 
                 l7Plane.setAttribute('material', {src: videoPool[index]});
@@ -736,17 +641,18 @@
                 sharedWildcardVid.pause();
                 targetEl.querySelector('.wildcard-layer').setAttribute('visible', false);
 
-                // V1: Reset wrapper Zoom scale
                 currentScale = 1;
                 targetEl.querySelector('.layer-wrapper').setAttribute('scale', '1 1 1');
 
                 const l1Plane = targetEl.querySelector('.l1');
-                l1Plane.setAttribute('proximity-door', 'active: false'); // Formally disengage component
+                l1Plane.removeAttribute('animation__door');
+                l1Plane.setAttribute('data-door-state', 'closed');
+                l1Plane.setAttribute('position', '0 0 0.02');
 
                 const l2Plane = targetEl.querySelector('.l2');
                 l2Plane.removeAttribute('animation__color');
                 l2Plane.removeAttribute('animation__op');
-                l2Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
+                l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
@@ -755,7 +661,7 @@
                 l3Plane.removeAttribute('animation__op');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
-                l3Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
+                l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                 const l4Plane = targetEl.querySelector('.l4');
                 l4Plane.removeAttribute('circular-motion');
@@ -792,6 +698,7 @@
             
             if (sfxSiren) { sfxSiren.play().then(() => sfxSiren.pause()).catch(e=>{}); }
             if (sfxEvilLaugh) { sfxEvilLaugh.play().then(() => sfxEvilLaugh.pause()).catch(e=>{}); }
+            if (sfxDoorWhoosh) { sfxDoorWhoosh.play().then(() => sfxDoorWhoosh.pause()).catch(e=>{}); }
             sharedWildcardVid.play().then(() => sharedWildcardVid.pause()).catch(e=>{});
             
             startScreen.classList.add('hidden');
@@ -803,7 +710,6 @@
             findCameraVideo();
         });
 
-        // --- V1 PINCH TO ZOOM (PARALLAX SAFE) ---
         window.addEventListener('touchstart', (e) => { 
             if (e.touches.length === 2 && activeTargetIndex !== null) {
                 initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); 
@@ -820,7 +726,7 @@
             }
         });
 
-        // --- COMBINED V1 EASTER EGG & V2 GESTURE ENGINE ---
+        // --- GESTURE ENGINE (Taps, Circles, and Swipes) ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -878,12 +784,26 @@
             if (!isDrawing) return;
             isDrawing = false;
             
-            if (analyzeGesture(touchPoints)) {
+            const gesture = analyzeGesture(touchPoints);
+            if (gesture === 'circle') {
                 initiateWildcardSequence(activeTargetIndex);
+            } else if (gesture === 'left' || gesture === 'right') {
+                handleSwipeAction(gesture, activeTargetIndex);
             }
         });
 
         function analyzeGesture(pts) {
+            if (pts.length < 5) return false; 
+            
+            let dx = pts[pts.length - 1].x - pts[0].x;
+            let dy = pts[pts.length - 1].y - pts[0].y;
+            
+            // Check for horizontal swipe (Must be mostly straight and > 100px long)
+            if (Math.abs(dx) > 100 && Math.abs(dx) > Math.abs(dy) * 2) {
+                return dx < 0 ? 'left' : 'right';
+            }
+            
+            // Check for Wildcard Circle
             if (pts.length < 20) return false; 
             let cx = 0, cy = 0; pts.forEach(p => { cx += p.x; cy += p.y; }); cx /= pts.length; cy /= pts.length;
             let totalAngle = 0; let prevAngle = Math.atan2(pts[0].y - cy, pts[0].x - cx);
@@ -893,7 +813,29 @@
                 if (delta > Math.PI) delta -= 2 * Math.PI; if (delta < -Math.PI) delta += 2 * Math.PI;
                 totalAngle += delta; prevAngle = angle;
             }
-            return Math.abs(totalAngle) > (3.5 * Math.PI);
+            if (Math.abs(totalAngle) > (3.5 * Math.PI)) return 'circle';
+
+            return false;
+        }
+
+        // --- NEW MANUAL DOOR LOGIC ---
+        function handleSwipeAction(direction, targetIndex) {
+            const data = COLLECTION_DATA[targetIndex];
+            if (!data || data.designLogic !== 'containment') return;
+
+            const doorPlane = document.querySelector(`#target-${targetIndex} .l1`);
+            const doorState = doorPlane.getAttribute('data-door-state') || 'closed';
+            
+            if (direction === 'left' && doorState === 'closed') {
+                doorPlane.setAttribute('data-door-state', 'open');
+                doorPlane.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
+                if (sfxDoorWhoosh) { sfxDoorWhoosh.currentTime = 0; sfxDoorWhoosh.play().catch(e => {}); }
+                if (sfxSiren) { sfxSiren.currentTime = 0; sfxSiren.play().catch(e => {}); }
+            } else if (direction === 'right' && doorState === 'open') {
+                doorPlane.setAttribute('data-door-state', 'closed');
+                doorPlane.setAttribute('animation__door', 'property: position; to: 0 0 0.02; dur: 800; easing: easeOutQuad');
+                if (sfxDoorWhoosh) { sfxDoorWhoosh.currentTime = 0; sfxDoorWhoosh.play().catch(e => {}); }
+            }
         }
 
         function initiateWildcardSequence(targetIndex) {
