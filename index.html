@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.22 - FORCED OPEN DOOR</title>
+    <title>SCANFREAK AR V2.23 - DOOR PHYSICS LOCK</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -76,28 +76,48 @@
             }
         });
 
-        // FIX: Proximity Door rewritten to FORCE open on scan, then evaluate distance.
+        // FIX: Proximity Door with a 2.5-second "Entrance Lock" to prevent instant-cancellation
         AFRAME.registerComponent('proximity-door', {
             schema: { active: {type: 'boolean', default: false} },
             init: function() {
                 this.isOpen = false;
+                this.isLocked = false;
                 this.doorAudio = document.getElementById('sfx-door-whoosh');
                 this.targetEntity = this.el.closest('[mindar-image-target]'); 
                 this.camDir = new THREE.Vector3(0, 0, -1); 
             },
             update: function(oldData) {
-                // When component activates (Target Found), bypass distance and force the door open.
                 if (this.data.active && !oldData.active) {
                     this.isOpen = true;
-                    this.el.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
+                    this.isLocked = true; // Lock the sensor!
+                    
+                    this.el.setAttribute('animation__door', {
+                        property: 'position', 
+                        to: '-1.05 0 0.02', 
+                        dur: 800, 
+                        easing: 'easeOutQuad'
+                    });
+
                     if(this.doorAudio) { 
                         this.doorAudio.currentTime = 0; 
                         this.doorAudio.play().catch(e => {}); 
                     }
+
+                    // Unlock the proximity sensor after 2.5 seconds
+                    if (this.lockTimeout) clearTimeout(this.lockTimeout);
+                    this.lockTimeout = setTimeout(() => { this.isLocked = false; }, 2500);
+
+                } else if (!this.data.active) {
+                    // Clean reset on target lost
+                    this.isOpen = false;
+                    this.isLocked = false;
+                    this.el.removeAttribute('animation__door');
+                    this.el.setAttribute('position', '0 0 0.02');
                 }
             },
             tick: function() {
-                if(!this.data.active || !this.targetEntity) return;
+                // If the door is locked from the entrance animation, do nothing!
+                if(!this.data.active || !this.targetEntity || this.isLocked) return;
 
                 let targetWorldPos = new THREE.Vector3();
                 this.targetEntity.object3D.getWorldPosition(targetWorldPos);
@@ -108,23 +128,28 @@
                 let angleDot = Math.abs(normal.dot(this.camDir)); 
                 let isExtremeAngle = angleDot < 0.45; 
 
-                let shouldBeClosed = dist > 2.5 && !isExtremeAngle; 
+                // Widened threshold bounds to prevent rapid bouncing
+                let shouldBeClosed = dist > 3.0 && !isExtremeAngle; 
                 let shouldBeOpen = dist < 2.0 || isExtremeAngle; 
 
                 if (shouldBeClosed && this.isOpen) {
                     this.isOpen = false;
-                    this.el.setAttribute('animation__door', 'property: position; to: 0 0 0.02; dur: 800; easing: easeOutQuad');
-                    if(this.doorAudio) { 
-                        this.doorAudio.currentTime = 0; 
-                        this.doorAudio.play().catch(e => {}); 
-                    }
+                    this.el.setAttribute('animation__door', {
+                        property: 'position', 
+                        to: '0 0 0.02', 
+                        dur: 800, 
+                        easing: 'easeOutQuad'
+                    });
+                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play().catch(e => {}); }
                 } else if (shouldBeOpen && !this.isOpen) {
                     this.isOpen = true;
-                    this.el.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
-                    if(this.doorAudio) { 
-                        this.doorAudio.currentTime = 0; 
-                        this.doorAudio.play().catch(e => {}); 
-                    }
+                    this.el.setAttribute('animation__door', {
+                        property: 'position', 
+                        to: '-1.05 0 0.02', 
+                        dur: 800, 
+                        easing: 'easeOutQuad'
+                    });
+                    if(this.doorAudio) { this.doorAudio.currentTime = 0; this.doorAudio.play().catch(e => {}); }
                 }
             }
         });
@@ -631,11 +656,11 @@
                     if (activeTargetIndex === null) return;
                     l2Plane.removeAttribute('animation__color');
                     l2Plane.removeAttribute('animation__op');
-                    l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                    l2Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
 
                     l3Plane.removeAttribute('animation__color');
                     l3Plane.removeAttribute('animation__op');
-                    l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                    l3Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
 
                     l6Plane.setAttribute('evil-glitch', 'active: true');
                     if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
@@ -716,14 +741,12 @@
                 targetEl.querySelector('.layer-wrapper').setAttribute('scale', '1 1 1');
 
                 const l1Plane = targetEl.querySelector('.l1');
-                l1Plane.removeAttribute('proximity-door');
-                l1Plane.removeAttribute('animation__door');
-                l1Plane.setAttribute('position', '0 0 0.02');
+                l1Plane.setAttribute('proximity-door', 'active: false'); // Formally disengage component
 
                 const l2Plane = targetEl.querySelector('.l2');
                 l2Plane.removeAttribute('animation__color');
                 l2Plane.removeAttribute('animation__op');
-                l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                l2Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
 
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
@@ -732,7 +755,7 @@
                 l3Plane.removeAttribute('animation__op');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
-                l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                l3Plane.setAttribute('material', 'color: #ffffff; opacity: 1');
 
                 const l4Plane = targetEl.querySelector('.l4');
                 l4Plane.removeAttribute('circular-motion');
@@ -854,7 +877,10 @@
         window.addEventListener('pointerup', () => {
             if (!isDrawing) return;
             isDrawing = false;
-            if (analyzeGesture(touchPoints)) initiateWildcardSequence(activeTargetIndex);
+            
+            if (analyzeGesture(touchPoints)) {
+                initiateWildcardSequence(activeTargetIndex);
+            }
         });
 
         function analyzeGesture(pts) {
