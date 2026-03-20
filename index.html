@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.13 - GLOBAL VIDEO POOL</title>
+    <title>SCANFREAK AR V2.16 - 2-TARGET SYNC</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -206,21 +206,25 @@
     </div>
 
     <a-scene id="ar-scene"
-        mindar-image="imageTargetSrc: descriptors/collection02/collection2.mind; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 5; uiScanning: no" 
+        mindar-image="imageTargetSrc: descriptors/collection02/collection02.mind; filterMinCF: 0.0001; filterBeta: 0.001; missTolerance: 5; uiScanning: no" 
         color-space="sRGB" 
         renderer="colorManagement: true, physicallyCorrectLights: true, preserveDrawingBuffer: true, antialias: false, alpha: true" 
         vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" embedded>
 
-        <a-assets>
+        <a-assets timeout="3000">
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
             <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
             <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
             <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
             <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto" loop></audio>
+
+            <video id="shared-l7-vid" src="" crossOrigin="anonymous" loop playsinline></video>
+            <video id="shared-wildcard-vid" src="" crossOrigin="anonymous" playsinline></video>
         </a-assets>
 
         <script>
-            for(let i=0; i<=23; i++) {
+            // CRITICAL FIX: Loop set to 1 (2 items total: index 0 and 1) to perfectly match the current collection02.mind file constraints.
+            for(let i=0; i<=1; i++) {
                 document.write(`
                 <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}">
                     <a-entity id="occlusion-mask-${i}" position="0 0 0.01">
@@ -251,24 +255,23 @@
 
     <script>
         const BASE_DATA = [
-            { name: 'cyberpunk', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'containment_cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
-            { name: 'placeholder3', id: '03', folder: 'design3', wildcardPrefix: 'des3', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder4', id: '04', folder: 'design4', wildcardPrefix: 'des4', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder5', id: '05', folder: 'design5', wildcardPrefix: 'des5', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder6', id: '06', folder: 'design6', wildcardPrefix: 'des6', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder7', id: '07', folder: 'design7', wildcardPrefix: 'des7', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder8', id: '08', folder: 'design8', wildcardPrefix: 'des8', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder9', id: '09', folder: 'design9', wildcardPrefix: 'des9', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder10', id: '10', folder: 'design10', wildcardPrefix: 'des10', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder11', id: '11', folder: 'design11', wildcardPrefix: 'des11', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
-            { name: 'placeholder12', id: '12', folder: 'design12', wildcardPrefix: 'des12', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 }
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk dystopia layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'containment cell', id: '02', folder: 'containment cell layers', wildcardPrefix: 'conta', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
+            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 }
         ];
 
         const COLLECTION_DATA = {};
         BASE_DATA.forEach((data, index) => { 
             COLLECTION_DATA[index] = data; 
-            COLLECTION_DATA[index + 12] = data; 
         });
 
         const sceneEl = document.querySelector('a-scene');
@@ -286,14 +289,8 @@
         const sfxSiren = document.getElementById('sfx-siren');
         const sfxEvilLaugh = document.getElementById('sfx-evil-laugh');
 
-        // MASSIVE OPTIMIZATION: Only 2 global video elements total, preventing browser deadlock
-        const sharedL7Vid = document.createElement('video');
-        sharedL7Vid.crossOrigin = "anonymous"; sharedL7Vid.loop = true; sharedL7Vid.setAttribute('playsinline', ''); sharedL7Vid.style.display = 'none';
-        document.body.appendChild(sharedL7Vid);
-
-        const sharedWildcardVid = document.createElement('video');
-        sharedWildcardVid.crossOrigin = "anonymous"; sharedWildcardVid.loop = false; sharedWildcardVid.setAttribute('playsinline', ''); sharedWildcardVid.style.display = 'none';
-        document.body.appendChild(sharedWildcardVid);
+        const sharedL7Vid = document.getElementById('shared-l7-vid');
+        const sharedWildcardVid = document.getElementById('shared-wildcard-vid');
 
         sharedWildcardVid.addEventListener('ended', () => {
             if (activeTargetIndex === null) return;
@@ -376,11 +373,10 @@
                     if (sfxSiren) { sfxSiren.currentTime = 0; sfxSiren.play(); }
                 }
 
-                // Global Video Handoff
                 sharedL7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
                 sharedL7Vid.load();
                 const l7Plane = targetEl.querySelector('.l7');
-                l7Plane.setAttribute('material', {src: sharedL7Vid});
+                l7Plane.setAttribute('src', '#shared-l7-vid');
                 l7Plane.setAttribute('visible', true);
                 sharedL7Vid.play().catch(e => { sharedL7Vid.muted = true; sharedL7Vid.play(); });
             });
@@ -454,7 +450,6 @@
             if (sfxStart) sfxStart.play();
             if (sfxStartup) setTimeout(() => sfxStartup.play(), 2000);
             
-            // Safe mobile audio unlocking
             if (sfxSiren) { sfxSiren.play().then(() => sfxSiren.pause()).catch(e=>{}); }
             if (sfxEvilLaugh) { sfxEvilLaugh.play().then(() => sfxEvilLaugh.pause()).catch(e=>{}); }
             sharedL7Vid.play().then(() => sharedL7Vid.pause()).catch(e=>{});
@@ -564,7 +559,7 @@
 
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             sharedWildcardVid.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('material', {src: sharedWildcardVid});
+            activeWildcardPlane.setAttribute('src', '#shared-wildcard-vid');
             
             sharedWildcardVid.muted = false; 
             const playPromise = sharedWildcardVid.play();
