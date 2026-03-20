@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.20 - 1FT PROXIMITY DOOR</title>
+    <title>SCANFREAK AR V2.21 - CYBERPUNK FIRST</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -107,7 +107,6 @@
                 let angleDot = Math.abs(normal.dot(this.camDir)); 
                 let isExtremeAngle = angleDot < 0.45; 
 
-                // FIX: Tightened threshold. < 1.2 is approx 1ft away from a standard t-shirt graphic
                 let shouldBeOpen = dist < 1.2 || isExtremeAngle; 
                 let shouldBeClosed = dist > 1.8 && !isExtremeAngle; 
 
@@ -311,9 +310,10 @@
     </a-scene>
 
     <script>
+        // CYBERPUNK IS BACK TO INDEX 0!
         const BASE_DATA = [
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
             { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
             { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
             { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
