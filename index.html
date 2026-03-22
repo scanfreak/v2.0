@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.26 - DOOR FRAMES & CHOREOGRAPHY</title>
+    <title>SCANFREAK AR V2.26 - CONTAINMENT DIORAMA CHOREOGRAPHY</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -223,8 +223,6 @@
             <audio id="sfx-flash" src="assets/sfx/flash.mp3" preload="auto"></audio>
             <audio id="sfx-info" src="assets/sfx/info.mp3" preload="auto"></audio>
             <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
-
-            <video id="shared-wildcard-vid" src="" crossOrigin="anonymous" playsinline></video>
         </a-assets>
 
         <script>
@@ -239,9 +237,7 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
-                        <a-plane class="l1-frame" width="1.05" height="1.866" position="0 0 0.015" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        
                         <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; color: #ffffff; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
@@ -260,20 +256,19 @@
     </a-scene>
 
     <script>
-        // ADDED FLAGS: Smart engine logic to handle missing frames natively
         const BASE_DATA = [
-            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: true, hasL1Frame: false },
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, hasL7Frame: true, hasL1Frame: true },
-            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false },
-            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, hasL7Frame: false, hasL1Frame: false }
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26 },
+            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 },
+            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88 }
         ];
 
         const COLLECTION_DATA = {};
@@ -550,9 +545,10 @@
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
             
-            // NEW: Frame Injection logic strictly based on BASE_DATA flags
-            if (data.hasL7Frame) targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
-            if (data.hasL1Frame) targetEl.querySelector('.l1-frame').setAttribute('src', `parallax/${data.folder}/layer1_frame_${data.id}.png`);
+            // FIX: Ensure layer7-frame applies to both Cyberpunk AND Containment designs
+            if (data.id === '01' || data.id === '02') {
+                targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+            }
 
             const l7Plane = targetEl.querySelector('.l7');
             const l7Vid = document.createElement('video');
@@ -586,7 +582,7 @@
                     }, 800);
                 }
 
-                // NEW: Containment Cell Complex Event Cascades
+                // FIX: Containment Wildcard End Sequence (Zoom Out & Pop)
                 if (data.designLogic === 'containment') {
                     const l2Plane = targetEl.querySelector('.l2');
                     const l3Plane = targetEl.querySelector('.l3');
@@ -597,6 +593,7 @@
 
                     setTimeout(() => {
                         if (activeTargetIndex !== index) return;
+                        
                         l2Plane.removeAttribute('animation__color');
                         l2Plane.removeAttribute('animation__op');
                         l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
@@ -606,7 +603,16 @@
                         l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
 
                         l6Plane.setAttribute('evil-glitch', 'active: true');
-                        if (sfxEvilLaugh) sfxEvilLaugh.muted = false;
+                        
+                        // Wait exactly 3 seconds after the video finished playing to trigger the Evil Laugh again
+                        setTimeout(() => {
+                            if (activeTargetIndex === index && sfxEvilLaugh) {
+                                sfxEvilLaugh.currentTime = 0;
+                                sfxEvilLaugh.muted = false;
+                                sfxEvilLaugh.play().catch(e=>{});
+                            }
+                        }, 2200); // 800ms zoom + 2200ms wait = 3000ms total
+                        
                     }, 800);
                 }
             });
@@ -624,8 +630,7 @@
                 screenshotBtn.classList.add('visible'); recordBtn.classList.add('visible'); zoomDisplay.classList.add('visible');
 
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
-                if (data.hasL7Frame) targetEl.querySelector('.l7-frame').setAttribute('visible', true);
-                if (data.hasL1Frame) targetEl.querySelector('.l1-frame').setAttribute('visible', true);
+                if (data.id === '01' || data.id === '02') targetEl.querySelector('.l7-frame').setAttribute('visible', true);
                 
                 if (data.designLogic === 'cyberpunk') {
                     targetEl.querySelector('.l3').setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
@@ -635,7 +640,17 @@
 
                 if (data.designLogic === 'containment') {
                     targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
-                    if (sfxEvilLaugh) { sfxEvilLaugh.muted = false; sfxEvilLaugh.play(); }
+                    
+                    // FIX: Play evil laugh instantly on target found
+                    if (sfxEvilLaugh) { 
+                        sfxEvilLaugh.currentTime = 0;
+                        sfxEvilLaugh.muted = false; 
+                        sfxEvilLaugh.play().catch(e=>{}); 
+                    }
+                    
+                    const doorPlane = targetEl.querySelector('.l1');
+                    doorPlane.setAttribute('data-door-state', 'closed');
+                    doorPlane.setAttribute('position', '0 0 0.02');
                 }
 
                 l7Plane.setAttribute('material', {src: videoPool[index]});
@@ -742,6 +757,7 @@
             }
         });
 
+        // --- GESTURE ENGINE (Taps, Circles, and Swipes) ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -851,6 +867,7 @@
             }
         }
 
+        // FIX: Containment Wildcard Initiation (Dissolve & Zoom In)
         function initiateWildcardSequence(targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data) return;
@@ -891,7 +908,8 @@
                 const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
 
                 l6Plane.setAttribute('evil-glitch', 'active: false');
-                if (sfxEvilLaugh) sfxEvilLaugh.muted = true;
+                l6Plane.setAttribute('opacity', '1'); 
+                if (sfxEvilLaugh) sfxEvilLaugh.muted = true; 
 
                 l2Plane.setAttribute('animation__color', 'property: components.material.material.color; type: color; to: #ff0000; dur: 800');
                 l2Plane.setAttribute('animation__op', 'property: material.opacity; to: 0; dur: 800');
