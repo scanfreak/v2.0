@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.26 - CONTAINMENT DIORAMA CHOREOGRAPHY</title>
+    <title>SCANFREAK AR V2.27 - DISSOLVE & VIDEO PLAYBACK FIXED</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -545,9 +545,16 @@
                 plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
             }
             
-            // FIX: Ensure layer7-frame applies to both Cyberpunk AND Containment designs
             if (data.id === '01' || data.id === '02') {
                 targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
+            }
+
+            // FIX: Reposition and perfectly scale L2 for Containment Cell dynamically
+            if (data.designLogic === 'containment') {
+                const l2Plane = targetEl.querySelector('.l2');
+                l2Plane.setAttribute('width', '1.05');
+                l2Plane.setAttribute('height', '1.866');
+                l2Plane.setAttribute('position', '0 0 -0.08'); 
             }
 
             const l7Plane = targetEl.querySelector('.l7');
@@ -560,6 +567,7 @@
 
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
+            wildcardVid.id = `wildcard-vid-${index}`;
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
             wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
             document.body.appendChild(wildcardVid);
@@ -582,7 +590,6 @@
                     }, 800);
                 }
 
-                // FIX: Containment Wildcard End Sequence (Zoom Out & Pop)
                 if (data.designLogic === 'containment') {
                     const l2Plane = targetEl.querySelector('.l2');
                     const l3Plane = targetEl.querySelector('.l3');
@@ -596,22 +603,22 @@
                         
                         l2Plane.removeAttribute('animation__color');
                         l2Plane.removeAttribute('animation__op');
-                        l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                        l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1, alphaTest: 0.5});
 
                         l3Plane.removeAttribute('animation__color');
                         l3Plane.removeAttribute('animation__op');
-                        l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                        l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1, alphaTest: 0.5});
 
                         l6Plane.setAttribute('evil-glitch', 'active: true');
                         
-                        // Wait exactly 3 seconds after the video finished playing to trigger the Evil Laugh again
+                        // Evil laugh triggers exactly 3 seconds after video finishes
                         setTimeout(() => {
                             if (activeTargetIndex === index && sfxEvilLaugh) {
                                 sfxEvilLaugh.currentTime = 0;
                                 sfxEvilLaugh.muted = false;
                                 sfxEvilLaugh.play().catch(e=>{});
                             }
-                        }, 2200); // 800ms zoom + 2200ms wait = 3000ms total
+                        }, 2200); 
                         
                     }, 800);
                 }
@@ -641,7 +648,6 @@
                 if (data.designLogic === 'containment') {
                     targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
                     
-                    // FIX: Play evil laugh instantly on target found
                     if (sfxEvilLaugh) { 
                         sfxEvilLaugh.currentTime = 0;
                         sfxEvilLaugh.muted = false; 
@@ -684,7 +690,7 @@
                 const l2Plane = targetEl.querySelector('.l2');
                 l2Plane.removeAttribute('animation__color');
                 l2Plane.removeAttribute('animation__op');
-                l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                l2Plane.setAttribute('material', {color: '#ffffff', opacity: 1, alphaTest: 0.5});
 
                 const l3Plane = targetEl.querySelector('.l3');
                 l3Plane.removeAttribute('animation__hover');
@@ -693,7 +699,7 @@
                 l3Plane.removeAttribute('animation__op');
                 l3Plane.setAttribute('position', '0 0 -1.60');
                 l3Plane.setAttribute('scale', '1 1 1');
-                l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1});
+                l3Plane.setAttribute('material', {color: '#ffffff', opacity: 1, alphaTest: 0.5});
 
                 const l4Plane = targetEl.querySelector('.l4');
                 l4Plane.removeAttribute('circular-motion');
@@ -757,7 +763,6 @@
             }
         });
 
-        // --- GESTURE ENGINE (Taps, Circles, and Swipes) ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -867,7 +872,6 @@
             }
         }
 
-        // FIX: Containment Wildcard Initiation (Dissolve & Zoom In)
         function initiateWildcardSequence(targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data) return;
@@ -887,13 +891,12 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            activeWildcardPlane.setAttribute('src', '#' + activeWildcardVideo.id);
             
-            activeWildcardVideo.muted = false; 
-            const playPromise = activeWildcardVideo.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => { activeWildcardVideo.pause(); }).catch(e => console.log("Unlock handled gracefully"));
-            }
+            // FIX: Play immediately on gesture to bypass iOS block, but keep it muted/invisible
+            activeWildcardVideo.currentTime = 0;
+            activeWildcardVideo.muted = true; 
+            activeWildcardVideo.play().catch(e => console.log("Unlock handled gracefully"));
 
             if (data.designLogic === 'cyberpunk') {
                 const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
@@ -911,9 +914,13 @@
                 l6Plane.setAttribute('opacity', '1'); 
                 if (sfxEvilLaugh) sfxEvilLaugh.muted = true; 
 
-                l2Plane.setAttribute('animation__color', 'property: components.material.material.color; type: color; to: #ff0000; dur: 800');
+                // FIX: Disable alphaTest momentarily to allow buttery smooth opacity fade
+                l2Plane.setAttribute('material', 'alphaTest: 0');
+                l2Plane.setAttribute('animation__color', 'property: material.color; type: color; to: #ff0000; dur: 800');
                 l2Plane.setAttribute('animation__op', 'property: material.opacity; to: 0; dur: 800');
-                l3Plane.setAttribute('animation__color', 'property: components.material.material.color; type: color; to: #ff0000; dur: 800');
+                
+                l3Plane.setAttribute('material', 'alphaTest: 0');
+                l3Plane.setAttribute('animation__color', 'property: material.color; type: color; to: #ff0000; dur: 800');
                 l3Plane.setAttribute('animation__op', 'property: material.opacity; to: 0; dur: 800');
 
                 setTimeout(() => {
@@ -930,7 +937,8 @@
             document.querySelector(`#target-${targetIndex} .wildcard-layer`).setAttribute('visible', true);
             
             const activeWildcardVideo = wildcardPool[targetIndex];
-            activeWildcardVideo.play().catch(e => { activeWildcardVideo.muted = true; activeWildcardVideo.play(); });
+            activeWildcardVideo.currentTime = 0; 
+            activeWildcardVideo.muted = false;
         }
     </script>
 </body>
