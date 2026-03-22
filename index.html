@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.28 - CHOREOGRAPHY RESTORATION</title>
+    <title>SCANFREAK AR V2.29 - SIMPLIFIED CONTAINMENT & V1 RESTORED</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -727,7 +727,6 @@
             }
         });
 
-        // --- GESTURE ENGINE ---
         let touchPoints = [];
         let isDrawing = false;
 
@@ -856,11 +855,14 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            activeWildcardPlane.setAttribute('src', '#' + activeWildcardVideo.id);
             
-            activeWildcardVideo.currentTime = 0;
-            activeWildcardVideo.muted = true; 
-            activeWildcardVideo.play().catch(e => console.log("Unlock handled gracefully"));
+            // RESTORED V2.11 PLAY/PAUSE UNLOCK TRICK FOR IOS
+            activeWildcardVideo.muted = false; 
+            const playPromise = activeWildcardVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => { activeWildcardVideo.pause(); }).catch(e => console.log("Unlock handled gracefully"));
+            }
 
             if (data.designLogic === 'cyberpunk') {
                 const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
@@ -873,7 +875,7 @@
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 if (sfxEvilLaugh) sfxEvilLaugh.muted = true; 
-
+                
                 finalizeWildcard(targetIndex); 
             }
             else { finalizeWildcard(targetIndex); }
@@ -885,8 +887,10 @@
             document.querySelector(`#target-${targetIndex} .wildcard-layer`).setAttribute('visible', true);
             
             const activeWildcardVideo = wildcardPool[targetIndex];
-            activeWildcardVideo.currentTime = 0; 
-            activeWildcardVideo.muted = false;
+            activeWildcardVideo.play().catch(e => { 
+                activeWildcardVideo.muted = true; 
+                activeWildcardVideo.play(); 
+            });
         }
     </script>
 </body>
