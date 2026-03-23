@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.34 - TRANSPARENCY & PLAYBACK FIXED</title>
+    <title>SCANFREAK AR V2.34 - TRANSPARENCY & MEDIA FIXES</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -17,7 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
     <script>
-        // Occlusion Mask Component
         AFRAME.registerComponent('hider-material', {
             init: function () {
                 const setHider = (mesh) => {
@@ -29,14 +28,11 @@
                 };
                 setHider(this.el.getObject3D('mesh'));
                 this.el.addEventListener('object3dset', (e) => {
-                    if (e.detail.type === 'mesh') {
-                        setHider(this.el.getObject3D('mesh'));
-                    }
+                    if (e.detail.type === 'mesh') { setHider(this.el.getObject3D('mesh')); }
                 });
             }
         });
 
-        // Circular Motion Physics Engine for Layer 4 (Cyberpunk)
         AFRAME.registerComponent('circular-motion', {
             schema: { radius: {type: 'number', default: 0.04}, speed: {type: 'number', default: 0.0015} },
             init: function() { 
@@ -51,7 +47,6 @@
             }
         });
 
-        // Smooth Bob Physics Engine for Layer 5 (Cyberpunk)
         AFRAME.registerComponent('smooth-bob', {
             schema: { bobSpeed: {type: 'number', default: 0.002}, bobHeight: {type: 'number', default: 0.06} },
             init: function() {
@@ -66,7 +61,6 @@
             }
         });
 
-        // Evil Glitch Physics Engine for Layer 6 (Containment Cell)
         AFRAME.registerComponent('evil-glitch', {
             schema: { active: {type: 'boolean', default: false} },
             tick: function() {
@@ -148,7 +142,6 @@
         .flash-active { animation: flashAnim 0.15s ease-out; }
         @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* Easter Egg Styles */
         #easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; pointer-events: none; display: none; opacity: 1; }
         .glitch-active { animation: glitchShake 0.12s infinite; }
         @keyframes glitchShake {
@@ -164,7 +157,6 @@
 <body>
 
     <img id="easter-egg-img" src="assets/dev.png" alt="dev">
-
     <div id="flash-overlay"></div>
 
     <div id="scanner-ui">
@@ -195,20 +187,10 @@
     <div id="zoom-display">ZOOM: 1.0x</div>
 
     <div id="help-message" class="msg-box normal-font">Scanner not loading? Pause your VPN, Adblocker or use link above in a default browser like Chrome or Safari.</div>
-    
     <div id="info-message" class="msg-box normal-font">
-        Welcome Freaks<br>
-        POINT SCAN DISCOVER!<br>
-        Scan your merch &<br>
-        discover a new world.<br>
-        Most freaks just Scan<br>
-        but some... Tap deeper<br>
-        into reality.<br>
-        -. .. -. .  - .. -- . ...
+        Welcome Freaks<br>POINT SCAN DISCOVER!<br>Scan your merch &<br>discover a new world.<br>Most freaks just Scan<br>but some... Tap deeper<br>into reality.<br>-. .. -. .  - .. -- . ...
     </div>
-
     <div id="flash-error-message" class="msg-box normal-font" style="width: auto; padding: 15px;">flash unavailable</div>
-    
     <div id="download-prompt" class="msg-box" style="font-family: 'Press Start 2P', cursive; font-size: 10px;">
         <p style="line-height: 1.5;">DOWNLOAD RECORDING?</p>
         <div class="prompt-container">
@@ -216,7 +198,7 @@
             <button id="download-no" class="prompt-btn no">NO</button>
         </div>
     </div>
-    
+
     <div id="overlay">
         <span class="marquee-text">Point camera at the SCANFREAK design!</span>
     </div>
@@ -230,11 +212,6 @@
         <a-assets timeout="3000">
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
             <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
-            <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
-            <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
-            
-            <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto"></audio>
-            
             <audio id="sfx-help" src="assets/sfx/help.mp3" preload="auto"></audio>
             <audio id="sfx-store" src="assets/sfx/store.mp3" preload="auto"></audio>
             <audio id="sfx-share" src="assets/sfx/share.mp3" preload="auto"></audio>
@@ -242,6 +219,10 @@
             <audio id="sfx-flash" src="assets/sfx/flash.mp3" preload="auto"></audio>
             <audio id="sfx-info" src="assets/sfx/info.mp3" preload="auto"></audio>
             <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
+            
+            <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
+            <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
+            <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto"></audio> 
         </a-assets>
 
         <script>
@@ -257,15 +238,18 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
-                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" visible="false"></a-plane>
-                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" visible="false"></a-plane>
-                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" visible="false"></a-plane>
-                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" visible="false"></a-plane>
-                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" visible="false"></a-plane>
-                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" visible="false"></a-plane>
-                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" visible="false"></a-plane>
-                        <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" visible="false"></a-plane>
-                        <a-plane class="wildcard-layer" position="0 0 0" visible="false"></a-plane>
+                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        
+                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        
+                        <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                        
+                        <a-plane class="wildcard-layer" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                     </a-entity>
                 </a-entity>`);
             }
@@ -574,18 +558,16 @@
             l7Vid.setAttribute('playsinline', ''); l7Vid.style.display = 'none';
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
-            
-            // Explicitly bind the video object so A-Frame doesn't drop the texture
-            l7Plane.setAttribute('material', {src: l7Vid, shader: 'flat', side: 'double', transparent: true, alphaTest: 0.5});
+            l7Plane.setAttribute('material', {src: l7Vid, shader: 'flat', side: 'double'});
 
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
+            wildcardVid.id = `wildcard-vid-${index}`;
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
             wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
-            
-            wildcardPlane.setAttribute('material', {src: wildcardVid, shader: 'flat', side: 'double', transparent: true});
+            wildcardPlane.setAttribute('material', {src: wildcardVid, shader: 'flat', side: 'double'});
 
             wildcardVid.addEventListener('ended', () => {
                 if (activeTargetIndex !== index) return;
@@ -598,7 +580,7 @@
                     const l3Plane = targetEl.querySelector('.l3');
                     l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
                     setTimeout(() => {
-                        if (activeTargetIndex === index && data.l3Idle === 'hover') {
+                        if (activeTargetIndex === index) {
                             l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
                         }
                     }, 800);
@@ -612,6 +594,7 @@
                     setTimeout(() => {
                         if (activeTargetIndex === index && sfxEvilLaugh) {
                             sfxEvilLaugh.currentTime = 0;
+                            sfxEvilLaugh.muted = false;
                             sfxEvilLaugh.play().catch(e=>{});
                         }
                     }, 3000); 
@@ -625,24 +608,13 @@
                 activeTargetIndex = index;
                 sessionPersistentTargetIndex = index;
 
-                // FIX: LAZY LOADING. Images load dynamically but retain full material transparency
+                // LAZY LOAD: Images load upon first physical scan to prevent 404 freezing
                 if (!targetEl.dataset.texturesLoaded) {
                     for(let l=1; l<=6; l++) {
-                        const plane = targetEl.querySelector(`.l${l}`);
-                        plane.setAttribute('material', {
-                            src: `url(parallax/${data.folder}/layer${l}_${data.id}.png)`,
-                            shader: 'flat',
-                            alphaTest: 0.5,
-                            transparent: true
-                        });
+                        targetEl.querySelector(`.l${l}`).setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
                     }
                     if (data.id === '01' || data.id === '02') {
-                        targetEl.querySelector('.l7-frame').setAttribute('material', {
-                            src: `url(parallax/${data.folder}/layer7_frame_${data.id}.png)`,
-                            shader: 'flat',
-                            alphaTest: 0.5,
-                            transparent: true
-                        });
+                        targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
                     }
                     l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
                     l7Vid.load();
@@ -668,6 +640,7 @@
                     
                     if (sfxEvilLaugh) { 
                         sfxEvilLaugh.currentTime = 0;
+                        sfxEvilLaugh.muted = false; 
                         sfxEvilLaugh.play().catch(e=>{}); 
                     }
                     
@@ -748,7 +721,6 @@
             ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.add('visible'));
             isStarted = true;
             
-            Object.values(videoPool).forEach(v => v.load());
             findCameraVideo();
         });
 
@@ -897,35 +869,38 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
-            // FIX: explicitly LOAD the video before attempting playback
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardVideo.load();
+            activeWildcardVideo.load(); 
             
-            // EXACT V2.11 RESTORE: iOS Unlock Trick
-            activeWildcardVideo.muted = false; 
+            // FIX: Inject explicit A-Frame string ID to render the updated video texture
+            activeWildcardPlane.setAttribute('src', '#' + activeWildcardVideo.id);
+            
+            // FIX: V2.11 iOS Unlock Trick
+            activeWildcardVideo.muted = true; 
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    activeWildcardVideo.pause();
-                    activeWildcardVideo.currentTime = 0; // Prevent playback bugs
+                    activeWildcardVideo.pause(); 
+                    activeWildcardVideo.currentTime = 0;
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
-            // CYBERPUNK WILDCARD START LOGIC
             if (data.designLogic === 'cyberpunk') {
                 const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
-                if (data.l3Idle === 'hover') l3Plane.removeAttribute('animation__hover');
-                
+                l3Plane.removeAttribute('animation__hover');
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
                 setTimeout(() => finalizeWildcard(targetIndex), 800);
             } 
-            // CONTAINMENT WILDCARD START LOGIC
             else if (data.designLogic === 'containment') {
                 const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 
-                if (sfxEvilLaugh) sfxEvilLaugh.pause(); // Clean pause instead of muting
+                // FIX: Actually force pause the loopless laugh during video
+                if (sfxEvilLaugh) {
+                    sfxEvilLaugh.pause();
+                    sfxEvilLaugh.currentTime = 0;
+                }
                 
                 finalizeWildcard(targetIndex); 
             }
@@ -939,10 +914,9 @@
             document.querySelector(`#target-${targetIndex} .wildcard-layer`).setAttribute('visible', true);
             
             const activeWildcardVideo = wildcardPool[targetIndex];
-            
-            // EXACT V2.11 RESTORE: Finalized play catch
             activeWildcardVideo.currentTime = 0;
             activeWildcardVideo.muted = false;
+            
             activeWildcardVideo.play().catch(e => { 
                 activeWildcardVideo.muted = true; 
                 activeWildcardVideo.play(); 
