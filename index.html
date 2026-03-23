@@ -265,7 +265,8 @@
     <script>
         const BASE_DATA = [
             { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            // CHANGED count to 2 so it only looks for cell1 and cell2! Change back to 10 when you add the other videos.
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 2, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
             { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
             { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
             { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
@@ -568,7 +569,6 @@
             l7Vid.setAttribute('playsinline', ''); l7Vid.style.display = 'none';
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
-            // REMOVED THE MATERIAL ASSIGNMENT FROM HERE
 
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
@@ -626,7 +626,6 @@
                     l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
                     l7Vid.load();
                     
-                    // FIXED: ASSIGN MATERIAL AFTER VIDEO SOURCE IS SET
                     l7Plane.setAttribute('material', {src: l7Vid, shader: 'flat', side: 'double'});
 
                     targetEl.dataset.texturesLoaded = 'true';
@@ -887,10 +886,15 @@
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             // EXACT V2.11 RESTORE: Inject material dynamically
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            
+            // THE FIX: Force the element to load the new source data
+            activeWildcardVideo.load(); 
+
             activeWildcardPlane.setAttribute('width', data.wildcardW);
             activeWildcardPlane.setAttribute('height', data.wildcardH);
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            
             // EXACT V2.11 RESTORE: iOS Unlock Trick
             activeWildcardVideo.muted = false;
             const playPromise = activeWildcardVideo.play();
