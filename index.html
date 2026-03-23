@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.33 - MASTER UNIFIED CHOREOGRAPHY</title>
+    <title>SCANFREAK AR V2.34 - TRANSPARENCY & PLAYBACK FIXED</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -230,6 +230,11 @@
         <a-assets timeout="3000">
             <audio id="sfx-start" src="assets/sfx/start.mp3" preload="auto"></audio>
             <audio id="sfx-startup" src="assets/sfx/startup.mp3" preload="auto"></audio>
+            <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
+            <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
+            
+            <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto"></audio>
+            
             <audio id="sfx-help" src="assets/sfx/help.mp3" preload="auto"></audio>
             <audio id="sfx-store" src="assets/sfx/store.mp3" preload="auto"></audio>
             <audio id="sfx-share" src="assets/sfx/share.mp3" preload="auto"></audio>
@@ -237,9 +242,6 @@
             <audio id="sfx-flash" src="assets/sfx/flash.mp3" preload="auto"></audio>
             <audio id="sfx-info" src="assets/sfx/info.mp3" preload="auto"></audio>
             <audio id="sfx-matrix" src="assets/sfx/matrix.mp3" preload="auto"></audio>
-            <audio id="sfx-siren" src="assets/sfx/siren.mp3" preload="auto"></audio>
-            <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
-            <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto" loop></audio>
         </a-assets>
 
         <script>
@@ -255,18 +257,15 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
-                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        
-                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
-                        
-                        <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
-                        
-                        <a-plane class="wildcard-layer" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
+                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" visible="false"></a-plane>
+                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" visible="false"></a-plane>
+                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" visible="false"></a-plane>
+                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" visible="false"></a-plane>
+                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" visible="false"></a-plane>
+                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" visible="false"></a-plane>
+                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" visible="false"></a-plane>
+                        <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" visible="false"></a-plane>
+                        <a-plane class="wildcard-layer" position="0 0 0" visible="false"></a-plane>
                     </a-entity>
                 </a-entity>`);
             }
@@ -276,7 +275,6 @@
     </a-scene>
 
     <script>
-        // --- BASE MAPPING ---
         const BASE_DATA = [
             { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
             { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
@@ -563,16 +561,6 @@
             const targetEl = document.querySelector(`#target-${index}`);
             if (!targetEl) return;
 
-            for(let l=1; l<=6; l++) {
-                const plane = targetEl.querySelector(`.l${l}`);
-                plane.setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
-            }
-            
-            if (data.id === '01' || data.id === '02') {
-                targetEl.querySelector('.l7-frame').setAttribute('src', `parallax/${data.folder}/layer7_frame_${data.id}.png`);
-            }
-
-            // CONTAINMENT DYNAMIC RESIZE
             if (data.designLogic === 'containment') {
                 const l2Plane = targetEl.querySelector('.l2');
                 l2Plane.setAttribute('width', '1.05');
@@ -584,9 +572,11 @@
             const l7Vid = document.createElement('video');
             l7Vid.crossOrigin = "anonymous"; l7Vid.loop = true; l7Vid.preload = "auto";
             l7Vid.setAttribute('playsinline', ''); l7Vid.style.display = 'none';
-            l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
             document.body.appendChild(l7Vid);
             videoPool[index] = l7Vid;
+            
+            // Explicitly bind the video object so A-Frame doesn't drop the texture
+            l7Plane.setAttribute('material', {src: l7Vid, shader: 'flat', side: 'double', transparent: true, alphaTest: 0.5});
 
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
@@ -594,6 +584,8 @@
             wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
+            
+            wildcardPlane.setAttribute('material', {src: wildcardVid, shader: 'flat', side: 'double', transparent: true});
 
             wildcardVid.addEventListener('ended', () => {
                 if (activeTargetIndex !== index) return;
@@ -602,8 +594,7 @@
                 isWildcardSequenceRunning = false;
                 if (videoPool[index]) videoPool[index].muted = false;
 
-                // CYBERPUNK WILDCARD END LOGIC
-                if (data.l3AnimType === 'slideLeft') {
+                if (data.designLogic === 'cyberpunk') {
                     const l3Plane = targetEl.querySelector('.l3');
                     l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
                     setTimeout(() => {
@@ -613,15 +604,14 @@
                     }, 800);
                 }
 
-                // CONTAINMENT WILDCARD END LOGIC
                 if (data.designLogic === 'containment') {
                     const l6Plane = targetEl.querySelector('.l6');
                     l6Plane.setAttribute('evil-glitch', 'active: true');
                     
+                    // Plays Evil Laugh exactly 3 seconds after video ends
                     setTimeout(() => {
                         if (activeTargetIndex === index && sfxEvilLaugh) {
                             sfxEvilLaugh.currentTime = 0;
-                            sfxEvilLaugh.muted = false;
                             sfxEvilLaugh.play().catch(e=>{});
                         }
                     }, 3000); 
@@ -635,6 +625,30 @@
                 activeTargetIndex = index;
                 sessionPersistentTargetIndex = index;
 
+                // FIX: LAZY LOADING. Images load dynamically but retain full material transparency
+                if (!targetEl.dataset.texturesLoaded) {
+                    for(let l=1; l<=6; l++) {
+                        const plane = targetEl.querySelector(`.l${l}`);
+                        plane.setAttribute('material', {
+                            src: `url(parallax/${data.folder}/layer${l}_${data.id}.png)`,
+                            shader: 'flat',
+                            alphaTest: 0.5,
+                            transparent: true
+                        });
+                    }
+                    if (data.id === '01' || data.id === '02') {
+                        targetEl.querySelector('.l7-frame').setAttribute('material', {
+                            src: `url(parallax/${data.folder}/layer7_frame_${data.id}.png)`,
+                            shader: 'flat',
+                            alphaTest: 0.5,
+                            transparent: true
+                        });
+                    }
+                    l7Vid.src = `parallax/${data.folder}/layer7_${data.id}.mp4`;
+                    l7Vid.load();
+                    targetEl.dataset.texturesLoaded = 'true';
+                }
+
                 overlay.classList.remove('visible'); scannerUi.classList.remove('visible');
                 document.querySelectorAll('.msg-box').forEach(m => m.classList.remove('visible'));
                 ['help-btn', 'cta-btn', 'share-btn', 'info-btn', 'flash-btn'].forEach(id => document.getElementById(id).classList.remove('visible'));
@@ -643,24 +657,17 @@
                 for(let l=1; l<=6; l++) targetEl.querySelector(`.l${l}`).setAttribute('visible', true);
                 if (data.id === '01' || data.id === '02') targetEl.querySelector('.l7-frame').setAttribute('visible', true);
                 
-                // CYBERPUNK IDLE LOGIC
-                if (data.l3Idle === 'hover') {
+                if (data.designLogic === 'cyberpunk') {
                     targetEl.querySelector('.l3').setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
-                }
-                if (data.l4Anim === 'circular') {
                     targetEl.querySelector('.l4').setAttribute('circular-motion', '');
-                }
-                if (data.l5Anim === 'smoothBob') {
                     targetEl.querySelector('.l5').setAttribute('smooth-bob', '');
                 }
 
-                // CONTAINMENT IDLE LOGIC
                 if (data.designLogic === 'containment') {
                     targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
                     
                     if (sfxEvilLaugh) { 
                         sfxEvilLaugh.currentTime = 0;
-                        sfxEvilLaugh.muted = false; 
                         sfxEvilLaugh.play().catch(e=>{}); 
                     }
                     
@@ -669,7 +676,6 @@
                     doorPlane.setAttribute('position', '0 0 0.02');
                 }
 
-                l7Plane.setAttribute('material', {src: videoPool[index]});
                 l7Plane.setAttribute('visible', true);
                 videoPool[index].play().catch(e => { videoPool[index].muted = true; videoPool[index].play(); });
             });
@@ -891,21 +897,22 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
             
-            // EXACT V2.11 RESTORE: Inject material dynamically
+            // FIX: explicitly LOAD the video before attempting playback
             activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
+            activeWildcardVideo.load();
             
             // EXACT V2.11 RESTORE: iOS Unlock Trick
             activeWildcardVideo.muted = false; 
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    activeWildcardVideo.pause(); 
+                    activeWildcardVideo.pause();
+                    activeWildcardVideo.currentTime = 0; // Prevent playback bugs
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
             // CYBERPUNK WILDCARD START LOGIC
-            if (data.l3AnimType === 'slideLeft') {
+            if (data.designLogic === 'cyberpunk') {
                 const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
                 if (data.l3Idle === 'hover') l3Plane.removeAttribute('animation__hover');
                 
@@ -917,7 +924,8 @@
                 const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
-                if (sfxEvilLaugh) sfxEvilLaugh.muted = true; 
+                
+                if (sfxEvilLaugh) sfxEvilLaugh.pause(); // Clean pause instead of muting
                 
                 finalizeWildcard(targetIndex); 
             }
@@ -933,6 +941,8 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             
             // EXACT V2.11 RESTORE: Finalized play catch
+            activeWildcardVideo.currentTime = 0;
+            activeWildcardVideo.muted = false;
             activeWildcardVideo.play().catch(e => { 
                 activeWildcardVideo.muted = true; 
                 activeWildcardVideo.play(); 
