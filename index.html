@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.34 - TRANSPARENCY & MEDIA FIXES</title>
+    <title>SCANFREAK AR V2.35 - CORE LOGIC RESTORED</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -81,6 +81,7 @@
         html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
         a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
 
+        /* UI STYLING */
         #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
         #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
@@ -152,9 +153,13 @@
             80% { transform: translate(-50%, -50%) translate(-3px, -8px) scale(1.02); filter: hue-rotate(180deg); }
             100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1); filter: hue-rotate(0deg); }
         }
+        /* Gesture Feedback */
+        #gesture-feedback { position: absolute; top: 15px; left: 15px; color: #00ff00; font-family: 'Press Start 2P', cursive; font-size: 10px; z-index: 99; opacity: 0; transition: opacity 0.3s; text-shadow: 1px 1px 2px black; pointer-events: none; }
     </style>
 </head>
 <body>
+
+    <div id="gesture-feedback">WILDCARD UNLOCKED</div>
 
     <img id="easter-egg-img" src="assets/dev.png" alt="dev">
     <div id="flash-overlay"></div>
@@ -238,15 +243,14 @@
                             <a-plane position="25.5 0 0" width="50" height="1.777" hider-material></a-plane>
                         </a-entity>
                         
-                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
+                        <a-plane class="l1" data-door-state="closed" width="1.05" height="1.866" position="0 0 0.02" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l2" width="1.8" height="3.20" position="0 0 -1.30" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l3" width="2.0" height="3.55" position="0 0 -1.60" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l4" width="2.2" height="3.91" position="0 0 -1.90" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l5" width="2.4" height="4.26" position="0 0 -2.20" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                        <a-plane class="l6" width="2.6" height="4.62" position="0 0 -2.50" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                         
-                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.01" visible="false"></a-plane>
-                        
+                        <a-plane class="l7-frame" width="11.2" height="19.88" position="0 0 -2.82" transparent="true" material="shader: flat; alphaTest: 0.5" visible="false"></a-plane>
                         <a-plane class="l7" width="2.8" height="4.97" position="0 0 -2.80" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
                         
                         <a-plane class="wildcard-layer" position="0 0 0" transparent="true" material="shader: flat; side: double" visible="false"></a-plane>
@@ -562,12 +566,10 @@
 
             const wildcardPlane = targetEl.querySelector('.wildcard-layer');
             const wildcardVid = document.createElement('video');
-            wildcardVid.id = `wildcard-vid-${index}`;
             wildcardVid.crossOrigin = "anonymous"; wildcardVid.loop = false; wildcardVid.preload = "auto";
             wildcardVid.setAttribute('playsinline', ''); wildcardVid.style.display = 'none';
             document.body.appendChild(wildcardVid);
             wildcardPool[index] = wildcardVid;
-            wildcardPlane.setAttribute('material', {src: wildcardVid, shader: 'flat', side: 'double'});
 
             wildcardVid.addEventListener('ended', () => {
                 if (activeTargetIndex !== index) return;
@@ -580,7 +582,7 @@
                     const l3Plane = targetEl.querySelector('.l3');
                     l3Plane.setAttribute('animation', 'property: position; from: 3.5 0 -1.60; to: 0 0 -1.60; dur: 800; easing: easeInOutQuad');
                     setTimeout(() => {
-                        if (activeTargetIndex === index) {
+                        if (activeTargetIndex === index && data.l3Idle === 'hover') {
                             l3Plane.setAttribute('animation__hover', 'property: position; from: 0 0 -1.60; to: 0 0.15 -1.60; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine');
                         }
                     }, 800);
@@ -590,7 +592,6 @@
                     const l6Plane = targetEl.querySelector('.l6');
                     l6Plane.setAttribute('evil-glitch', 'active: true');
                     
-                    // Plays Evil Laugh exactly 3 seconds after video ends
                     setTimeout(() => {
                         if (activeTargetIndex === index && sfxEvilLaugh) {
                             sfxEvilLaugh.currentTime = 0;
@@ -608,7 +609,7 @@
                 activeTargetIndex = index;
                 sessionPersistentTargetIndex = index;
 
-                // LAZY LOAD: Images load upon first physical scan to prevent 404 freezing
+                // LAZY LOAD IMAGES ON FIRST SCAN
                 if (!targetEl.dataset.texturesLoaded) {
                     for(let l=1; l<=6; l++) {
                         targetEl.querySelector(`.l${l}`).setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
@@ -858,45 +859,50 @@
 
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
             const feedback = document.getElementById('gesture-feedback');
-            feedback.style.opacity = '1';
-            setTimeout(() => feedback.style.opacity = '0', 3000);
+            if (feedback) {
+                feedback.style.opacity = '1';
+                setTimeout(() => feedback.style.opacity = '0', 3000);
+            }
+
+            const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
+            if (data.l3Idle === 'hover') {
+                l3Plane.removeAttribute('animation__hover');
+            }
 
             const activeWildcardPlane = document.querySelector(`#target-${targetIndex} .wildcard-layer`);
+            const activeWildcardVideo = wildcardPool[targetIndex];
+            
+            const randomVidNum = Math.floor(Math.random() * data.count) + 1;
+            
+            // EXACT V2.11 RESTORE: Inject material dynamically
+            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            
             activeWildcardPlane.setAttribute('width', data.wildcardW);
             activeWildcardPlane.setAttribute('height', data.wildcardH);
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
-
-            const activeWildcardVideo = wildcardPool[targetIndex];
-            const randomVidNum = Math.floor(Math.random() * data.count) + 1;
+            activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             
-            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
-            activeWildcardVideo.load(); 
-            
-            // FIX: Inject explicit A-Frame string ID to render the updated video texture
-            activeWildcardPlane.setAttribute('src', '#' + activeWildcardVideo.id);
-            
-            // FIX: V2.11 iOS Unlock Trick
-            activeWildcardVideo.muted = true; 
+            // EXACT V2.11 RESTORE: iOS Unlock Trick
+            activeWildcardVideo.muted = false; 
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
                     activeWildcardVideo.pause(); 
-                    activeWildcardVideo.currentTime = 0;
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
-            if (data.designLogic === 'cyberpunk') {
-                const l3Plane = document.querySelector(`#target-${targetIndex} .l3`);
-                l3Plane.removeAttribute('animation__hover');
+            // CYBERPUNK WILDCARD START LOGIC
+            if (data.l3AnimType === 'slideLeft') {
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
                 setTimeout(() => finalizeWildcard(targetIndex), 800);
             } 
+            // CONTAINMENT WILDCARD START LOGIC
             else if (data.designLogic === 'containment') {
                 const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 
-                // FIX: Actually force pause the loopless laugh during video
+                // Pause loopless laugh during video
                 if (sfxEvilLaugh) {
                     sfxEvilLaugh.pause();
                     sfxEvilLaugh.currentTime = 0;
@@ -904,19 +910,23 @@
                 
                 finalizeWildcard(targetIndex); 
             }
-            else { finalizeWildcard(targetIndex); }
+            else { 
+                l3Plane.setAttribute('position', '0 0 -1.60');
+                finalizeWildcard(targetIndex); 
+            }
         }
 
         function finalizeWildcard(targetIndex) {
             if (!isWildcardSequenceRunning) return; 
             
             if (videoPool[targetIndex]) videoPool[targetIndex].muted = true;
-            document.querySelector(`#target-${targetIndex} .wildcard-layer`).setAttribute('visible', true);
+            
+            const activeWildcardPlane = document.querySelector(`#target-${targetIndex} .wildcard-layer`);
+            activeWildcardPlane.setAttribute('visible', true);
             
             const activeWildcardVideo = wildcardPool[targetIndex];
-            activeWildcardVideo.currentTime = 0;
-            activeWildcardVideo.muted = false;
             
+            // EXACT V2.11 RESTORE: Finalized play catch
             activeWildcardVideo.play().catch(e => { 
                 activeWildcardVideo.muted = true; 
                 activeWildcardVideo.play(); 
