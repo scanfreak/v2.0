@@ -1,10 +1,78 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    color: #333;
-    text-align: center;
-    margin: 50px;
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
+a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
+
+/* UI STYLING */
+#start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
+#start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.logo-wrapper { position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 70vw; height: 70vw; max-width: 300px; max-height: 300px; margin-bottom: 20px; }
+.logo-image { max-width: 90%; max-height: 90%; object-fit: contain; display: block; opacity: 1; }
+.animate-logo { animation: fadeOut 3s ease-in-out forwards; }
+.logo-wrapper::after { content: ""; position: absolute; top: -150%; left: -150%; width: 100%; height: 400%; background: linear-gradient(135deg, transparent, rgba(255,255,255,0.7), transparent); transform: rotate(25deg); }
+.animate-sweep::after { animation: sweep 1.2s ease-in-out forwards; }
+@keyframes sweep { 100% { top: 100%; left: 100%; } }
+@keyframes fadeOut { 0%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.95); } }
+
+#loading-container { width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1); margin-top: 20px; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.2); }
+#loading-bar { width: 40%; height: 100%; background: #ffffff; position: absolute; left: -40%; border-radius: 10px; animation: loadingMove 1.5s infinite ease-in-out; box-shadow: 0 0 10px #fff; }
+@keyframes loadingMove { 0% { left: -40%; } 50% { left: 100%; } 100% { left: -40%; } }
+
+#start-btn { font-family: 'Press Start 2P', cursive; padding: 15px 15px; font-size: 15px; color: black; background: white; border: 4px solid #555; border-radius: 15px; cursor: pointer; text-transform: uppercase; box-shadow: 4px 4px 0px #888; opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in; position: absolute; margin-top: 30px; }
+#start-btn.visible { opacity: 1; pointer-events: auto; animation: pulseBtn 1.5s infinite; }
+@keyframes pulseBtn { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translateY(-50%) scale(1); } }
+#start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
+
+#scanner-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60vw; height: 60vw; max-width: 320px; max-height: 320px; border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+#scanner-ui.visible { opacity: 1; }
+.corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
+.top-left { top: -4px; left: -4px; border-right: none; border-bottom: none; }
+.top-right { top: -4px; right: -4px; border-left: none; border-bottom: none; }
+.bottom-left { bottom: -4px; left: -4px; border-right: none; border-top: none; }
+.bottom-right { bottom: -4px; right: -4px; border-left: none; border-top: none; }
+.scan-line { position: absolute; width: 100%; height: 8px; background: white; top: 0; left: 0; box-shadow: 0 0 20px white; animation: scanMove 2.0s ease-in-out infinite; }
+@keyframes scanMove { 0%, 100% { top: 5%; opacity: 0.3; } 50% { top: 95%; opacity: 1; } }
+
+#overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; padding: 12px 0; color: white; font-size: 18px; font-family: Arial, sans-serif; text-shadow: 2px 2px 4px black; background: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 10; transition: opacity 0.5s; pointer-events: none; opacity: 0; overflow: hidden; white-space: nowrap; }
+#overlay.visible { opacity: 1; }
+.marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 6.4s linear infinite; }
+@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+.btn-ui { position: absolute; width: 36px; height: 36px; right: 15px; background: rgba(0, 0, 0, 0.4); color: white; border: 2px solid white; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 50; transition: opacity 0.5s; opacity: 0; pointer-events: none; overflow: hidden; }
+.btn-ui.visible { opacity: 1; pointer-events: auto !important; }
+#info-btn { top: 15px; } #flash-btn { top: 60px; } #share-btn { top: 105px; } #cta-btn { top: 150px; } #help-btn { top: 195px; }
+#screenshot-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-110%); width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
+#screenshot-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
+#record-btn { position: absolute; bottom: 30px; left: 15px; width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
+#record-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
+.ui-icon { width: 70%; height: 70%; object-fit: contain; }
+
+#rec-timer { position: absolute; bottom: 45px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: #ff0000; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; display: none; }
+#zoom-display { position: absolute; bottom: 15px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+#zoom-display.visible { opacity: 1; }
+
+.msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; padding: 25px; text-align: center; color: white; background: rgba(0, 0, 0, 0.9); border-radius: 15px; border: 2px solid white; z-index: 40; transition: opacity 0.5s; opacity: 0; pointer-events: none; user-select: none; -webkit-user-select: none; line-height: 1.6; }
+.msg-box.visible { opacity: 1; pointer-events: auto; }
+#info-message, #help-message { width: 54vw; height: 54vw; max-width: 250px; max-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; line-height: 1.35; font-family: Arial, sans-serif; font-size: 15px; }
+.normal-font { font-family: Arial, sans-serif; font-size: 17px; }
+.prompt-container { display: flex; justify-content: space-around; margin-top: 20px; }
+.prompt-btn { padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 12px; background: white; color: black; border: none; border-radius: 8px; cursor: pointer; }
+.prompt-btn:active { transform: scale(0.9); }
+.prompt-btn.no { background: #555; color: white; }
+
+#flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 100; pointer-events: none; }
+.flash-active { animation: flashAnim 0.15s ease-out; }
+@keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+#easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; pointer-events: none; display: none; opacity: 1; }
+.glitch-active { animation: glitchShake 0.12s infinite; }
+@keyframes glitchShake {
+    0% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1.02); filter: hue-rotate(0deg); }
+    20% { transform: translate(-50%, -50%) translate(-5px, -5px) scale(0.98); filter: hue-rotate(90deg) invert(0.2); }
+    40% { transform: translate(-50%, -50%) translate(-8px, 8px) scale(1.05); filter: hue-rotate(-90deg); }
+    60% { transform: translate(-50%, -50%) translate(8px, -5px) scale(0.95); filter: invert(0.5); }
+    80% { transform: translate(-50%, -50%) translate(-3px, -8px) scale(1.02); filter: hue-rotate(180deg); }
+    100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1); filter: hue-rotate(0deg); }
 }
-h1 {
-    color: blue;
-}
+
+/* Gesture Feedback */
+#gesture-feedback { position: absolute; top: 15px; left: 15px; color: #00ff00; font-family: 'Press Start 2P', cursive; font-size: 10px; z-index: 99; opacity: 0; transition: opacity 0.3s; text-shadow: 1px 1px 2px black; pointer-events: none; }

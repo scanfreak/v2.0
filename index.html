@@ -13,6 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
+    <link rel="stylesheet" href="css/style.css">
+
     <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
@@ -76,86 +78,6 @@
             }
         });
     </script>
-    
-    <style>
-        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; touch-action: none; }
-        a-scene { position: fixed !important; top: 0; left: 0; width: 100vw !important; height: 100vh !important; }
-
-        /* UI STYLING */
-        #start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; transition: opacity 0.5s, visibility 0.5s; user-select: none; }
-        #start-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-        .logo-wrapper { position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center; width: 70vw; height: 70vw; max-width: 300px; max-height: 300px; margin-bottom: 20px; }
-        .logo-image { max-width: 90%; max-height: 90%; object-fit: contain; display: block; opacity: 1; }
-        .animate-logo { animation: fadeOut 3s ease-in-out forwards; }
-        .logo-wrapper::after { content: ""; position: absolute; top: -150%; left: -150%; width: 100%; height: 400%; background: linear-gradient(135deg, transparent, rgba(255,255,255,0.7), transparent); transform: rotate(25deg); }
-        .animate-sweep::after { animation: sweep 1.2s ease-in-out forwards; }
-        @keyframes sweep { 100% { top: 100%; left: 100%; } }
-        @keyframes fadeOut { 0%, 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.95); } }
-
-        #loading-container { width: 200px; height: 4px; background: rgba(255, 255, 255, 0.1); margin-top: 20px; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.2); }
-        #loading-bar { width: 40%; height: 100%; background: #ffffff; position: absolute; left: -40%; border-radius: 10px; animation: loadingMove 1.5s infinite ease-in-out; box-shadow: 0 0 10px #fff; }
-        @keyframes loadingMove { 0% { left: -40%; } 50% { left: 100%; } 100% { left: -40%; } }
-
-        #start-btn { font-family: 'Press Start 2P', cursive; padding: 15px 15px; font-size: 15px; color: black; background: white; border: 4px solid #555; border-radius: 15px; cursor: pointer; text-transform: uppercase; box-shadow: 4px 4px 0px #888; opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in; position: absolute; margin-top: 30px; }
-        #start-btn.visible { opacity: 1; pointer-events: auto; animation: pulseBtn 1.5s infinite; }
-        @keyframes pulseBtn { 0% { transform: translateY(-50%) scale(1); } 50% { transform: translateY(-50%) scale(1.08); box-shadow: 0 0 15px rgba(255,255,255,0.4); } 100% { transform: translateY(-50%) scale(1); } }
-        #start-btn:active { transform: translateY(-50%) translate(4px, 4px); box-shadow: none; }
-
-        #scanner-ui { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60vw; height: 60vw; max-width: 320px; max-height: 320px; border: 2px solid rgba(255, 255, 255, 0); z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
-        #scanner-ui.visible { opacity: 1; }
-        .corner { position: absolute; width: 30px; height: 30px; border: 8px solid white; }
-        .top-left { top: -4px; left: -4px; border-right: none; border-bottom: none; }
-        .top-right { top: -4px; right: -4px; border-left: none; border-bottom: none; }
-        .bottom-left { bottom: -4px; left: -4px; border-right: none; border-top: none; }
-        .bottom-right { bottom: -4px; right: -4px; border-left: none; border-top: none; }
-        .scan-line { position: absolute; width: 100%; height: 8px; background: white; top: 0; left: 0; box-shadow: 0 0 20px white; animation: scanMove 2.0s ease-in-out infinite; }
-        @keyframes scanMove { 0%, 100% { top: 5%; opacity: 0.3; } 50% { top: 95%; opacity: 1; } }
-
-        #overlay { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 400px; padding: 12px 0; color: white; font-size: 18px; font-family: Arial, sans-serif; text-shadow: 2px 2px 4px black; background: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 10; transition: opacity 0.5s; pointer-events: none; opacity: 0; overflow: hidden; white-space: nowrap; }
-        #overlay.visible { opacity: 1; }
-        .marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 6.4s linear infinite; }
-        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-
-        .btn-ui { position: absolute; width: 36px; height: 36px; right: 15px; background: rgba(0, 0, 0, 0.4); color: white; border: 2px solid white; border-radius: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 50; transition: opacity 0.5s; opacity: 0; pointer-events: none; overflow: hidden; }
-        .btn-ui.visible { opacity: 1; pointer-events: auto !important; }
-        #info-btn { top: 15px; } #flash-btn { top: 60px; } #share-btn { top: 105px; } #cta-btn { top: 150px; } #help-btn { top: 195px; }
-        #screenshot-btn { position: absolute; bottom: 30px; left: 50%; transform: translateX(-110%); width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
-        #screenshot-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
-        #record-btn { position: absolute; bottom: 30px; left: 15px; width: 60px; height: 60px; border-radius: 15px; z-index: 20; display: none; }
-        #record-btn.visible { display: flex; opacity: 1; pointer-events: auto; }
-        .ui-icon { width: 70%; height: 70%; object-fit: contain; }
-
-        #rec-timer { position: absolute; bottom: 45px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: #ff0000; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; display: none; }
-        #zoom-display { position: absolute; bottom: 15px; right: 15px; font-family: 'Press Start 2P', cursive; font-size: 10px; color: white; background: rgba(0, 0, 0, 0.5); padding: 8px; border-radius: 5px; z-index: 20; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-        #zoom-display.visible { opacity: 1; }
-
-        .msg-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 400px; padding: 25px; text-align: center; color: white; background: rgba(0, 0, 0, 0.9); border-radius: 15px; border: 2px solid white; z-index: 40; transition: opacity 0.5s; opacity: 0; pointer-events: none; user-select: none; -webkit-user-select: none; line-height: 1.6; }
-        .msg-box.visible { opacity: 1; pointer-events: auto; }
-        #info-message, #help-message { width: 54vw; height: 54vw; max-width: 250px; max-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; line-height: 1.35; font-family: Arial, sans-serif; font-size: 15px; }
-        .normal-font { font-family: Arial, sans-serif; font-size: 17px; }
-        .prompt-container { display: flex; justify-content: space-around; margin-top: 20px; }
-        .prompt-btn { padding: 10px 20px; font-family: 'Press Start 2P', cursive; font-size: 12px; background: white; color: black; border: none; border-radius: 8px; cursor: pointer; }
-        .prompt-btn:active { transform: scale(0.9); }
-        .prompt-btn.no { background: #555; color: white; }
-
-        #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 100; pointer-events: none; }
-        .flash-active { animation: flashAnim 0.15s ease-out; }
-        @keyframes flashAnim { 0% { opacity: 1; } 100% { opacity: 0; } }
-
-        #easter-egg-img { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100vw; height: 100vh; object-fit: contain; z-index: 9999; pointer-events: none; display: none; opacity: 1; }
-        .glitch-active { animation: glitchShake 0.12s infinite; }
-        @keyframes glitchShake {
-            0% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1.02); filter: hue-rotate(0deg); }
-            20% { transform: translate(-50%, -50%) translate(-5px, -5px) scale(0.98); filter: hue-rotate(90deg) invert(0.2); }
-            40% { transform: translate(-50%, -50%) translate(-8px, 8px) scale(1.05); filter: hue-rotate(-90deg); }
-            60% { transform: translate(-50%, -50%) translate(8px, -5px) scale(0.95); filter: invert(0.5); }
-            80% { transform: translate(-50%, -50%) translate(-3px, -8px) scale(1.02); filter: hue-rotate(180deg); }
-            100% { transform: translate(-50%, -50%) translate(5px, 5px) scale(1); filter: hue-rotate(0deg); }
-        }
-        /* Gesture Feedback */
-        #gesture-feedback { position: absolute; top: 15px; left: 15px; color: #00ff00; font-family: 'Press Start 2P', cursive; font-size: 10px; z-index: 99; opacity: 0; transition: opacity 0.3s; text-shadow: 1px 1px 2px black; pointer-events: none; }
-    </style>
 </head>
 <body>
 
@@ -231,7 +153,7 @@
         </a-assets>
 
         <script>
-            // Safety measure: Loop set to 1 because there are only 2 targets currently in collection02.mind
+            // Loop set to 1 because there are only 2 targets currently in collection02.mind
             for(let i=0; i<=1; i++) {
                 document.write(`
                 <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}">
@@ -263,20 +185,20 @@
     </a-scene>
 
     <script>
+        // UPDATED: Adjusted prefixes, counts, and added sharePrefix to match the folder structure exactly
         const BASE_DATA = [
-            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
-            // CHANGED count to 2 so it only looks for cell1 and cell2! Change back to 10 when you add the other videos.
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'cell', count: 2, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
-            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' }
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', sharePrefix: 'cyberpunk', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'conta', sharePrefix: 'containment', count: 10, designLogic: 'containment', wildcardZ: -2.15, wildcardW: 2.4, wildcardH: 4.26, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', sharePrefix: 'liminal', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', sharePrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', sharePrefix: 'cosmic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', sharePrefix: 'steampunk', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', sharePrefix: 'cryptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', sharePrefix: 'server', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', sharePrefix: 'apocalyptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', sharePrefix: 'impossible', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', sharePrefix: 'bizarre', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', sharePrefix: 'system', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' }
         ];
 
         const COLLECTION_DATA = {};
@@ -474,7 +396,7 @@
         const handleStopRecording = async () => {
             lastRecordedBlob = new Blob(recordedChunks, { type: 'video/mp4' });
             const file = new File([lastRecordedBlob], "scanfreak_ar.mp4", { type: 'video/mp4' });
-            const shareMsg = 'Check out this AR capture! 👾 https://scanfreak.myshopify.com';
+            const shareMsg = 'Check out this AR capture! 🔥 https://scanfreak.myshopify.com';
             if (navigator.share) {
                 try { await navigator.share({ title: 'SCANFREAK AR', text: shareMsg, files: [file] });
                 kickstartActiveVideo(); } 
@@ -517,7 +439,7 @@
                 out.toBlob(async blob => {
                     const file = new File([blob], "scanfreak.jpg", {type: "image/jpeg"});
                     if (navigator.share) {
-                        try { await navigator.share({ title: 'SCANFREAK AR', text: "The future is now - level up your reality or become obsolete! 👾", url: 'https://scanfreak.myshopify.com', files: [file] });
+                        try { await navigator.share({ title: 'SCANFREAK AR', text: "The future is now - level up your reality or become obsolete! 🔥", url: 'https://scanfreak.myshopify.com', files: [file] });
                         } catch (err) {}
                     }
                 }, 'image/jpeg', 0.95);
@@ -526,13 +448,18 @@
 
         shareBtn.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation(); triggerHaptic(); sfxShare.currentTime = 0; sfxShare.play();
-            const shareText = "Got my hands on some wild merch. It's freakin on another level - it literally comes alive! You've got to experience this immersive AR for yourself 👾";
+            const shareText = "Got my hands on some wild merch. It's freakin on another level - it literally comes alive! You've got to experience this immersive AR for yourself 🔥";
             const shareUrl = "https://scanfreak.myshopify.com/";
             const shareTitle = "SCANFREAK AR";
             let filePath = "assets/scanfreakblanklogo.png"; let fileName = "scanfreak.png";
+            
+            // UPDATED: Now uses sharePrefix to grab the exact correct file name without a 404
             if (sessionPersistentTargetIndex !== null) {
                 const data = COLLECTION_DATA[sessionPersistentTargetIndex];
-                filePath = `assets/share/${data.name}_share.png`; fileName = `${data.name}_share.png`;
+                if(data.sharePrefix) {
+                    filePath = `assets/share/${data.sharePrefix}_share.png`; 
+                    fileName = `${data.sharePrefix}_share.png`;
+                }
             }
             try {
                 const response = await fetch(filePath); const blob = await response.blob();
@@ -869,6 +796,8 @@
             isWildcardSequenceRunning = true; 
 
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+            
+            // "WILDCARD UNLOCKED" Green Feedback
             const feedback = document.getElementById('gesture-feedback');
             if (feedback) {
                 feedback.style.opacity = '1';
@@ -884,10 +813,10 @@
             const activeWildcardVideo = wildcardPool[targetIndex];
             
             const randomVidNum = Math.floor(Math.random() * data.count) + 1;
-            // EXACT V2.11 RESTORE: Inject material dynamically
-            activeWildcardVideo.src = `videos/wildcards/${data.wildcardPrefix}${randomVidNum}.mp4`;
             
-            // THE FIX: Force the element to load the new source data
+            // UPDATED: Path matches new structure: videos/collection02/prefix/prefix#.mp4
+            activeWildcardVideo.src = `videos/collection02/${data.wildcardPrefix}/${data.wildcardPrefix}${randomVidNum}.mp4`;
+            
             activeWildcardVideo.load(); 
 
             activeWildcardPlane.setAttribute('width', data.wildcardW);
@@ -895,7 +824,6 @@
             activeWildcardPlane.setAttribute('position', `0 0 ${data.wildcardZ}`);
             activeWildcardPlane.setAttribute('material', {src: activeWildcardVideo});
             
-            // EXACT V2.11 RESTORE: iOS Unlock Trick
             activeWildcardVideo.muted = false;
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
@@ -937,7 +865,6 @@
             activeWildcardPlane.setAttribute('visible', true);
             
             const activeWildcardVideo = wildcardPool[targetIndex];
-            // EXACT V2.11 RESTORE: Finalized play catch
             activeWildcardVideo.play().catch(e => { 
                 activeWildcardVideo.muted = true; 
                 activeWildcardVideo.play(); 
