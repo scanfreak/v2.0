@@ -341,6 +341,7 @@
 
         let easterEggTaps = [];
         let isEasterEggRunning = false;
+        let inactivityTimer = null; // Used for Containment 9s Laugh
 
         const triggerHaptic = () => { if (navigator.vibrate) navigator.vibrate(50); };
 
@@ -554,6 +555,26 @@
         infoBtn.addEventListener('click', () => { triggerHaptic(); sfxInfo.currentTime = 0; sfxInfo.play(); showMessage(document.getElementById('info-message')); });
         document.getElementById('info-message').addEventListener('click', () => { document.getElementById('info-message').classList.remove('visible'); });
 
+        // TWEAK 2: Containment Inactivity Logic
+        const resetInactivity = () => {
+            clearTimeout(inactivityTimer);
+            if (sfxEvilLaugh) { 
+                sfxEvilLaugh.pause(); 
+                sfxEvilLaugh.currentTime = 0; 
+            }
+            if (activeTargetIndex !== null && !isWildcardSequenceRunning && !isEasterEggRunning) {
+                const data = COLLECTION_DATA[activeTargetIndex];
+                if (data && data.designLogic === 'containment') {
+                    inactivityTimer = setTimeout(() => {
+                        if (activeTargetIndex !== null && !isWildcardSequenceRunning && !isEasterEggRunning && sfxEvilLaugh) {
+                            sfxEvilLaugh.muted = false;
+                            sfxEvilLaugh.play().catch(e=>{});
+                        }
+                    }, 9000); // Plays after 9 seconds of no touching
+                }
+            }
+        };
+
         const setupTarget = (index) => {
             const data = COLLECTION_DATA[index];
             const targetEl = document.querySelector(`#target-${index}`);
@@ -585,7 +606,14 @@
                 
                 wildcardPlane.setAttribute('visible', false);
                 isWildcardSequenceRunning = false;
-                if (videoPool[index]) videoPool[index].muted = false;
+                
+                if (videoPool[index]) {
+                    videoPool[index].muted = false;
+                    // TWEAK 3: Resume background video when wildcard finishes
+                    if (data.designLogic === 'containment') {
+                        videoPool[index].play().catch(e=>{});
+                    }
+                }
 
                 if (data.designLogic === 'cyberpunk') {
                     const l3Plane = targetEl.querySelector('.l3');
@@ -600,14 +628,7 @@
                 if (data.designLogic === 'containment') {
                     const l6Plane = targetEl.querySelector('.l6');
                     l6Plane.setAttribute('evil-glitch', 'active: true');
-                    
-                    setTimeout(() => {
-                        if (activeTargetIndex === index && sfxEvilLaugh) {
-                            sfxEvilLaugh.currentTime = 0;
-                            sfxEvilLaugh.muted = false;
-                            sfxEvilLaugh.play().catch(e=>{});
-                        }
-                    }, 3000);
+                    resetInactivity(); // TWEAK 2: Restart the 9s timer
                 }
             });
 
@@ -651,15 +672,12 @@
 
                 if (data.designLogic === 'containment') {
                     targetEl.querySelector('.l6').setAttribute('evil-glitch', 'active: true');
-                    if (sfxEvilLaugh) { 
-                        sfxEvilLaugh.currentTime = 0;
-                        sfxEvilLaugh.muted = false; 
-                        sfxEvilLaugh.play().catch(e=>{}); 
-                    }
                     
                     const doorPlane = targetEl.querySelector('.l1');
                     doorPlane.setAttribute('data-door-state', 'closed');
                     doorPlane.setAttribute('position', '0 0 0.02');
+                    
+                    resetInactivity(); // TWEAK 2: Start the 9s timer instead of playing laugh immediately
                 }
 
                 l7Plane.setAttribute('visible', true);
@@ -669,6 +687,7 @@
             targetEl.addEventListener('targetLost', () => {
                 activeTargetIndex = null;
                 isWildcardSequenceRunning = false;
+                clearTimeout(inactivityTimer); // TWEAK 2: Kill timer when tracking lost
                 
                 screenshotBtn.classList.remove('visible'); recordBtn.classList.remove('visible'); zoomDisplay.classList.remove('visible');
                 
@@ -744,6 +763,7 @@
         });
 
         window.addEventListener('touchmove', (e) => {
+            resetInactivity(); // TWEAK 2: Reset 9s timer on screen touch movement
             if (e.touches.length === 2 && activeTargetIndex !== null) {
                 const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
                 currentScale = Math.min(Math.max(currentScale * (dist / initialDist), 0.5), 3);
@@ -758,8 +778,22 @@
         let touchPoints = [];
         let isDrawing = false;
 
+        // TWEAK 1: Function to mute everything except the Easter Egg matrix sound
+        const muteAllForEasterEgg = (mute) => {
+            const allSfx = [sfxStart, sfxStartup, sfxHelp, sfxStore, sfxShare, sfxScreenshot, sfxFlash, sfxInfo, sfxSiren, sfxDoorWhoosh, sfxEvilLaugh];
+            allSfx.forEach(sfx => { if (sfx) sfx.muted = mute; });
+            
+            if (activeTargetIndex !== null) {
+                if (videoPool[activeTargetIndex]) videoPool[activeTargetIndex].muted = mute;
+                if (wildcardPool[activeTargetIndex]) wildcardPool[activeTargetIndex].muted = mute;
+            }
+        };
+
         const triggerEasterEgg = () => {
             isEasterEggRunning = true;
+            muteAllForEasterEgg(true); // TWEAK 1: Mute all other audio
+            clearTimeout(inactivityTimer); // TWEAK 2: Kill evil laugh timer
+            
             const matrixAudio = document.getElementById('sfx-matrix');
             const eggImg = document.getElementById('easter-egg-img');
             
@@ -774,7 +808,11 @@
             setTimeout(() => { if(isEasterEggRunning) { eggImg.style.transition = 'opacity 4s ease-out'; eggImg.style.opacity = '0'; eggImg.style.pointerEvents = 'none'; } }, 22000);
             setTimeout(() => {
                 eggImg.style.display = 'none'; eggImg.classList.remove('glitch-active');
-                isEasterEggRunning = false; easterEggTaps = []; 
+                isEasterEggRunning = false; 
+                easterEggTaps = []; 
+                muteAllForEasterEgg(false); // TWEAK 1: Restore normal audio state
+                resetInactivity(); // TWEAK 2: Restart inactivity if on containment cell
+                
                 if (isStarted && activeTargetIndex === null) {
                     scannerUi.classList.add('visible'); overlay.classList.add('visible');
                     [helpBtn, ctaBtn, shareBtn, infoBtn, flashBtn].forEach(btn => { btn.classList.add('visible'); btn.style.pointerEvents = 'auto'; });
@@ -796,6 +834,7 @@
 
         window.addEventListener('pointerdown', (e) => {
             if (!isStarted) return;
+            resetInactivity(); // TWEAK 2: Reset 9s timer on tap
             if (e.isPrimary && e.button === 0) handleCenterTap(e.clientX, e.clientY);
 
             if (activeTargetIndex === null || isWildcardSequenceRunning || isEasterEggRunning) return;
@@ -850,6 +889,8 @@
         function handleSwipeAction(direction, targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data || data.designLogic !== 'containment') return;
+            
+            resetInactivity(); // TWEAK 2: Swiping door resets 9s laugh timer
 
             const doorPlane = document.querySelector(`#target-${targetIndex} .l1`);
             const doorState = doorPlane.getAttribute('data-door-state') || 'closed';
@@ -902,8 +943,7 @@
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    // BUG FIX: Only pause the unlocked video if we are waiting for a slide animation (Cyberpunk).
-                    // If we are Containment, finalizeWildcard runs immediately, so pausing here causes a race condition that freezes the video!
+                    // Retained Race Condition fix - ONLY pause background if not containment
                     if (data.designLogic !== 'containment') {
                         activeWildcardVideo.pause(); 
                     }
@@ -921,9 +961,16 @@
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 
+                clearTimeout(inactivityTimer); // TWEAK 2: Pause evil laugh timer during wildcard
                 if (sfxEvilLaugh) {
                     sfxEvilLaugh.pause();
                     sfxEvilLaugh.currentTime = 0;
+                }
+                
+                // TWEAK 3: Pause the background layer 7 video while containment wildcard plays
+                if (videoPool[targetIndex]) {
+                    videoPool[targetIndex].pause();
+                    videoPool[targetIndex].muted = true;
                 }
                 
                 finalizeWildcard(targetIndex);
