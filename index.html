@@ -263,7 +263,6 @@
     </a-scene>
 
     <script>
-        // UPDATED: Containment cell has wildcardZ: -1.45 so it sits in front of layer 3. Paths updated. sharePrefix included.
         const BASE_DATA = [
             { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', sharePrefix: 'cyberpunk', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
             { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'conta', sharePrefix: 'containment', count: 10, designLogic: 'containment', wildcardZ: -1.45, wildcardW: 1.9, wildcardH: 3.37, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
@@ -874,7 +873,6 @@
 
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
             
-            // "WILDCARD UNLOCKED" Green Feedback
             const feedback = document.getElementById('gesture-feedback');
             if (feedback) {
                 feedback.style.opacity = '1';
@@ -904,7 +902,11 @@
             const playPromise = activeWildcardVideo.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    activeWildcardVideo.pause(); 
+                    // BUG FIX: Only pause the unlocked video if we are waiting for a slide animation (Cyberpunk).
+                    // If we are Containment, finalizeWildcard runs immediately, so pausing here causes a race condition that freezes the video!
+                    if (data.designLogic !== 'containment') {
+                        activeWildcardVideo.pause(); 
+                    }
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
@@ -919,7 +921,6 @@
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 
-                // Pause loopless laugh during video
                 if (sfxEvilLaugh) {
                     sfxEvilLaugh.pause();
                     sfxEvilLaugh.currentTime = 0;
