@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SCANFREAK AR V2.40 - MULTI-DESIGN SCALING</title>
+    <title>SCANFREAK AR V2.40 - LIMINAL EXPANSION</title>
     
     <link rel="icon" type="image/png" href="assets/scanfreakblanklogo.png">
     <link rel="apple-touch-icon" href="assets/scanfreakblanklogo.png">
@@ -229,12 +229,13 @@
             <audio id="sfx-door-whoosh" src="assets/sfx/door-whoosh.mp3" preload="auto"></audio>
             <audio id="sfx-evil-laugh" src="assets/sfx/evil-laugh.mp3" preload="auto"></audio> 
             
-            <audio id="sfx-liminalelevator" src="assets/sfx/liminalelevator.mp3" preload="auto"></audio>
-            <audio id="sfx-liminalcorridor" src="assets/sfx/liminalcorridor.mp3" preload="auto"></audio>
+            <audio id="sfx-liminal-elevator" src="assets/sfx/liminalelevator.mp3" preload="auto"></audio>
+            <audio id="sfx-liminal-corridor" src="assets/sfx/liminalcorridor.mp3" preload="auto"></audio>
+            <audio id="sfx-liminal-whisper" src="assets/sfx/liminalwhisper.mp3" preload="auto"></audio> 
         </a-assets>
 
         <script>
-            // UPDATED: Loop set to 2 because there are now 3 targets (0, 1, 2) in collection02.mind
+            // Loop set to 2 because there are now 3 targets in collection02.mind
             for(let i=0; i<=2; i++) {
                 document.write(`
                 <a-entity mindar-image-target="targetIndex: ${i}" id="target-${i}">
@@ -266,22 +267,20 @@
     </a-scene>
 
     <script>
-        // UPDATED: Added sfxAmbient, sfxSwipe, and sfxAlarm properties to map specific sounds dynamically per design.
+        // Liminal updated to count: 0, designLogic: containment, matching Z depths
         const BASE_DATA = [
-            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', sharePrefix: 'cyberpunk', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'conta', sharePrefix: 'containment', count: 10, designLogic: 'containment', wildcardZ: -1.45, wildcardW: 1.9, wildcardH: 3.37, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: 'sfx-evil-laugh', sfxSwipe: 'sfx-door-whoosh', sfxAlarm: 'sfx-siren' },
-            // ADDED: Liminal space using containment logic, but mapped to its own unique SFX. Count is 0 until wildcard videos are added.
-            { name: 'liminal space', id: '03', folder: 'liminal layers', wildcardPrefix: 'limin', sharePrefix: 'liminal', count: 0, designLogic: 'containment', wildcardZ: -1.45, wildcardW: 1.9, wildcardH: 3.37, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: 'sfx-liminalcorridor', sfxSwipe: 'sfx-liminalelevator', sfxAlarm: null },
-            
-            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', sharePrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', sharePrefix: 'cosmic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', sharePrefix: 'steampunk', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', sharePrefix: 'cryptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', sharePrefix: 'server', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', sharePrefix: 'apocalyptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', sharePrefix: 'impossible', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', sharePrefix: 'bizarre', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null },
-            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', sharePrefix: 'system', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none', sfxAmbient: null, sfxSwipe: null, sfxAlarm: null }
+            { name: 'cyberpunk dystopia', id: '01', folder: 'cyberpunk layers', wildcardPrefix: 'cyber', sharePrefix: 'cyberpunk', count: 10, designLogic: 'cyberpunk', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'slideLeft', l3Idle: 'hover', l4Anim: 'circular', l5Anim: 'smoothBob' },
+            { name: 'containment cell', id: '02', folder: 'containment layers', wildcardPrefix: 'conta', sharePrefix: 'containment', count: 10, designLogic: 'containment', wildcardZ: -1.45, wildcardW: 1.9, wildcardH: 3.37, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'liminal space', id: '03', folder: 'liminal space layers', wildcardPrefix: 'limin', sharePrefix: 'liminal', count: 0, designLogic: 'containment', wildcardZ: -1.45, wildcardW: 1.9, wildcardH: 3.37, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'mystical abyss', id: '04', folder: 'mystical abyss layers', wildcardPrefix: 'abyss', sharePrefix: 'abyss', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'cosmic tear', id: '05', folder: 'cosmic tear layers', wildcardPrefix: 'cosmi', sharePrefix: 'cosmic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'steampunk core', id: '06', folder: 'steampunk core layers', wildcardPrefix: 'steam', sharePrefix: 'steampunk', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'cyrptic ruin', id: '07', folder: 'cyrptic ruin layers', wildcardPrefix: 'crypt', sharePrefix: 'cryptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'server room', id: '08', folder: 'server room layers', wildcardPrefix: 'serve', sharePrefix: 'server', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'apocalyptic dread', id: '09', folder: 'apocalyptic dread layers', wildcardPrefix: 'apoca', sharePrefix: 'apocalyptic', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'impossible geomtry', id: '10', folder: 'impossible geomtry layers', wildcardPrefix: 'impos', sharePrefix: 'impossible', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'bizarre vista', id: '11', folder: 'bizarre vista layers', wildcardPrefix: 'bizar', sharePrefix: 'bizarre', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' },
+            { name: 'system glitch', id: '12', folder: 'system glitch layers', wildcardPrefix: 'syste', sharePrefix: 'system', count: 10, designLogic: 'none', wildcardZ: -2.75, wildcardW: 2.75, wildcardH: 4.88, l3AnimType: 'none', l3Idle: 'none', l4Anim: 'none', l5Anim: 'none' }
         ];
 
         const COLLECTION_DATA = {};
@@ -309,6 +308,22 @@
         const downloadPrompt = document.getElementById('download-prompt');
         const downloadYes = document.getElementById('download-yes');
         const downloadNo = document.getElementById('download-no');
+
+        const sfxStart = document.getElementById('sfx-start');
+        const sfxStartup = document.getElementById('sfx-startup');
+        const sfxHelp = document.getElementById('sfx-help');
+        const sfxStore = document.getElementById('sfx-store');
+        const sfxShare = document.getElementById('sfx-share');
+        const sfxScreenshot = document.getElementById('sfx-screenshot');
+        const sfxFlash = document.getElementById('sfx-flash');
+        const sfxInfo = document.getElementById('sfx-info');
+        const sfxSiren = document.getElementById('sfx-siren');
+        const sfxDoorWhoosh = document.getElementById('sfx-door-whoosh');
+        const sfxEvilLaugh = document.getElementById('sfx-evil-laugh');
+        
+        const sfxLiminalElevator = document.getElementById('sfx-liminal-elevator');
+        const sfxLiminalCorridor = document.getElementById('sfx-liminal-corridor');
+        const sfxLiminalWhisper = document.getElementById('sfx-liminal-whisper');
 
         let isStarted = false;
         let msgTimeout;
@@ -361,8 +376,7 @@
 
         const toggleFlash = async () => {
             triggerHaptic();
-            const sfxFlash = document.getElementById('sfx-flash');
-            if(sfxFlash) { sfxFlash.currentTime = 0; sfxFlash.play(); }
+            sfxFlash.currentTime = 0; sfxFlash.play();
             try {
                 if (!cameraVideo) findCameraVideo();
                 if (!track && cameraVideo) track = cameraVideo.srcObject.getVideoTracks()[0];
@@ -376,8 +390,7 @@
 
         const toggleRecording = () => {
             triggerHaptic();
-            const sfxScreenshot = document.getElementById('sfx-screenshot');
-            if(sfxScreenshot) { sfxScreenshot.currentTime = 0; sfxScreenshot.play(); }
+            sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             if (!isRecording) startRecording(); else stopRecording();
         };
         recordBtn.addEventListener('click', toggleRecording);
@@ -498,9 +511,7 @@
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') kickstartActiveVideo(); });
 
         screenshotBtn.addEventListener('click', async () => {
-            triggerHaptic(); 
-            const sfxScreenshot = document.getElementById('sfx-screenshot');
-            if(sfxScreenshot){ sfxScreenshot.currentTime = 0; sfxScreenshot.play(); }
+            triggerHaptic(); sfxScreenshot.currentTime = 0; sfxScreenshot.play();
             flashOverlay.classList.remove('flash-active'); void flashOverlay.offsetWidth; flashOverlay.classList.add('flash-active');
             const arCanvas = sceneEl.canvas;
             sceneEl.renderer.render(sceneEl.object3D, sceneEl.camera);
@@ -523,9 +534,7 @@
         });
 
         shareBtn.addEventListener('click', async (e) => {
-            e.preventDefault(); e.stopPropagation(); triggerHaptic(); 
-            const sfxShare = document.getElementById('sfx-share');
-            if(sfxShare){ sfxShare.currentTime = 0; sfxShare.play(); }
+            e.preventDefault(); e.stopPropagation(); triggerHaptic(); sfxShare.currentTime = 0; sfxShare.play();
             const shareText = "Got my hands on some wild merch. It's freakin on another level - it literally comes alive! You've got to experience this immersive AR for yourself 🔥";
             const shareUrl = "https://scanfreak.myshopify.com/";
             const shareTitle = "SCANFREAK AR";
@@ -549,31 +558,32 @@
             } catch (err) { navigator.clipboard.writeText(shareText + " " + shareUrl).then(() => alert("Link copied to clipboard!")); }
         });
 
-        helpBtn.addEventListener('click', () => { triggerHaptic(); const sfxHelp = document.getElementById('sfx-help'); if(sfxHelp)sfxHelp.play(); showMessage(document.getElementById('help-message')); });
+        helpBtn.addEventListener('click', () => { triggerHaptic(); sfxHelp.play(); showMessage(document.getElementById('help-message')); });
         document.getElementById('help-message').addEventListener('click', () => document.getElementById('help-message').classList.remove('visible'));
-        ctaBtn.addEventListener('click', (e) => { e.preventDefault(); triggerHaptic(); const sfxStore = document.getElementById('sfx-store'); if(sfxStore){sfxStore.currentTime = 0; sfxStore.play();} setTimeout(() => { window.open('https://scanfreak.myshopify.com', '_blank'); }, 150); });
-        infoBtn.addEventListener('click', () => { triggerHaptic(); const sfxInfo = document.getElementById('sfx-info'); if(sfxInfo){sfxInfo.currentTime = 0; sfxInfo.play();} showMessage(document.getElementById('info-message')); });
+        ctaBtn.addEventListener('click', (e) => { e.preventDefault(); triggerHaptic(); sfxStore.currentTime = 0; sfxStore.play(); setTimeout(() => { window.open('https://scanfreak.myshopify.com', '_blank'); }, 150); });
+        infoBtn.addEventListener('click', () => { triggerHaptic(); sfxInfo.currentTime = 0; sfxInfo.play(); showMessage(document.getElementById('info-message')); });
         document.getElementById('info-message').addEventListener('click', () => { document.getElementById('info-message').classList.remove('visible'); });
 
-        // TWEAK 2: Upgraded dynamically mapped Containment Inactivity Logic
+        // DYNAMIC INACTIVITY: Uses correct audio ID based on design
         const resetInactivity = () => {
             clearTimeout(inactivityTimer);
-            if (activeTargetIndex !== null) {
+            if (sfxEvilLaugh) { sfxEvilLaugh.pause(); sfxEvilLaugh.currentTime = 0; }
+            if (sfxLiminalWhisper) { sfxLiminalWhisper.pause(); sfxLiminalWhisper.currentTime = 0; }
+            
+            if (activeTargetIndex !== null && !isWildcardSequenceRunning && !isEasterEggRunning) {
                 const data = COLLECTION_DATA[activeTargetIndex];
-                if (data && data.sfxAmbient) {
-                    const ambientSfx = document.getElementById(data.sfxAmbient);
-                    if (ambientSfx) {
-                        ambientSfx.pause();
-                        ambientSfx.currentTime = 0;
-                    }
-                    if (data.designLogic === 'containment' && !isWildcardSequenceRunning && !isEasterEggRunning) {
-                        inactivityTimer = setTimeout(() => {
-                            if (activeTargetIndex !== null && !isWildcardSequenceRunning && !isEasterEggRunning && ambientSfx) {
-                                ambientSfx.muted = false;
-                                ambientSfx.play().catch(e=>{});
+                if (data && data.designLogic === 'containment') {
+                    inactivityTimer = setTimeout(() => {
+                        if (activeTargetIndex !== null && !isWildcardSequenceRunning && !isEasterEggRunning) {
+                            if (data.id === '02' && sfxEvilLaugh) {
+                                sfxEvilLaugh.muted = false;
+                                sfxEvilLaugh.play().catch(e=>{});
+                            } else if (data.id === '03' && sfxLiminalWhisper) {
+                                sfxLiminalWhisper.muted = false;
+                                sfxLiminalWhisper.play().catch(e=>{});
                             }
-                        }, 9000); 
-                    }
+                        }
+                    }, 9000); 
                 }
             }
         };
@@ -612,7 +622,6 @@
                 
                 if (videoPool[index]) {
                     videoPool[index].muted = false;
-                    // Resume background video when wildcard finishes
                     if (data.designLogic === 'containment') {
                         videoPool[index].play().catch(e=>{});
                     }
@@ -642,7 +651,6 @@
                 activeTargetIndex = index;
                 sessionPersistentTargetIndex = index;
 
-                // LAZY LOAD IMAGES ON FIRST SCAN
                 if (!targetEl.dataset.texturesLoaded) {
                     for(let l=1; l<=6; l++) {
                         targetEl.querySelector(`.l${l}`).setAttribute('src', `parallax/${data.folder}/layer${l}_${data.id}.png`);
@@ -728,12 +736,8 @@
                 l6Plane.removeAttribute('evil-glitch');
                 l6Plane.setAttribute('opacity', 1);
 
-                // Dynamically grab and pause whichever ambient SFX was assigned to this design
-                if (data.sfxAmbient) {
-                    const ambientSfx = document.getElementById(data.sfxAmbient);
-                    if (ambientSfx) ambientSfx.pause();
-                }
-
+                if (sfxEvilLaugh) { sfxEvilLaugh.pause(); }
+                if (sfxLiminalWhisper) { sfxLiminalWhisper.pause(); }
                 if (videoPool[index]) videoPool[index].muted = false;
             });
         };
@@ -749,17 +753,12 @@
         });
 
         startBtn.addEventListener('click', () => {
-            triggerHaptic(); 
-            const sfxStart = document.getElementById('sfx-start');
-            if(sfxStart) sfxStart.play();
-            setTimeout(() => { const sfxStartup = document.getElementById('sfx-startup'); if(sfxStartup)sfxStartup.play(); }, 2000);
+            triggerHaptic(); sfxStart.play();
+            setTimeout(() => sfxStartup.play(), 2000);
             
-            // Pre-warm mobile audio pipelines for all dynamically added SFX
-            const prewarmList = ['sfx-siren', 'sfx-evil-laugh', 'sfx-door-whoosh', 'sfx-liminalelevator', 'sfx-liminalcorridor'];
-            prewarmList.forEach(id => {
-                const sfx = document.getElementById(id);
-                if (sfx) { sfx.play().then(() => sfx.pause()).catch(e=>{}); }
-            });
+            if (sfxSiren) { sfxSiren.play().then(() => sfxSiren.pause()).catch(e=>{}); }
+            if (sfxEvilLaugh) { sfxEvilLaugh.play().then(() => sfxEvilLaugh.pause()).catch(e=>{}); }
+            if (sfxDoorWhoosh) { sfxDoorWhoosh.play().then(() => sfxDoorWhoosh.pause()).catch(e=>{}); }
              
             startScreen.classList.add('hidden');
             overlay.classList.add('visible'); scannerUi.classList.add('visible');
@@ -791,9 +790,13 @@
         let touchPoints = [];
         let isDrawing = false;
 
-        // TWEAK 1 UPGRADE: Scalable global mute function targeting all audio tags dynamically
+        // DYNAMIC AUDIO MUTE: Automatically handles ALL current and future audio tags
         const muteAllForEasterEgg = (mute) => {
-            document.querySelectorAll('audio').forEach(audio => { audio.muted = mute; });
+            document.querySelectorAll('audio').forEach(audio => {
+                if (audio.id !== 'sfx-matrix') {
+                    audio.muted = mute;
+                }
+            });
             
             if (activeTargetIndex !== null) {
                 if (videoPool[activeTargetIndex]) videoPool[activeTargetIndex].muted = mute;
@@ -898,7 +901,7 @@
             return false;
         }
 
-        // UPGRADE: Uses dynamic audio IDs from BASE_DATA instead of hardcoded variables
+        // DYNAMIC DOOR AUDIO: Plays correct specific sound FX based on active target ID
         function handleSwipeAction(direction, targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
             if (!data || data.designLogic !== 'containment') return;
@@ -907,27 +910,38 @@
 
             const doorPlane = document.querySelector(`#target-${targetIndex} .l1`);
             const doorState = doorPlane.getAttribute('data-door-state') || 'closed';
-            
-            const swipeSfx = data.sfxSwipe ? document.getElementById(data.sfxSwipe) : null;
-            const alarmSfx = data.sfxAlarm ? document.getElementById(data.sfxAlarm) : null;
-
             if (direction === 'left' && doorState === 'closed') {
                 doorPlane.setAttribute('data-door-state', 'open');
                 doorPlane.setAttribute('animation__door', 'property: position; to: -1.05 0 0.02; dur: 800; easing: easeOutQuad');
-                if (swipeSfx) { swipeSfx.currentTime = 0; swipeSfx.play().catch(e => {}); }
-                if (alarmSfx) { alarmSfx.currentTime = 0; alarmSfx.play().catch(e => {}); }
+                
+                if (data.id === '02') {
+                    if (sfxDoorWhoosh) { sfxDoorWhoosh.currentTime = 0; sfxDoorWhoosh.play().catch(e => {}); }
+                    if (sfxSiren) { sfxSiren.currentTime = 0; sfxSiren.play().catch(e => {}); }
+                } else if (data.id === '03') {
+                    if (sfxLiminalElevator) { sfxLiminalElevator.currentTime = 0; sfxLiminalElevator.play().catch(e => {}); }
+                    if (sfxLiminalCorridor) { sfxLiminalCorridor.currentTime = 0; sfxLiminalCorridor.play().catch(e => {}); }
+                }
             } else if (direction === 'right' && doorState === 'open') {
                 doorPlane.setAttribute('data-door-state', 'closed');
                 doorPlane.setAttribute('animation__door', 'property: position; to: 0 0 0.02; dur: 800; easing: easeOutQuad');
-                if (swipeSfx) { swipeSfx.currentTime = 0; swipeSfx.play().catch(e => {}); }
+                
+                if (data.id === '02') {
+                    if (sfxDoorWhoosh) { sfxDoorWhoosh.currentTime = 0; sfxDoorWhoosh.play().catch(e => {}); }
+                } else if (data.id === '03') {
+                    if (sfxLiminalElevator) { sfxLiminalElevator.currentTime = 0; sfxLiminalElevator.play().catch(e => {}); }
+                }
             }
         }
 
         function initiateWildcardSequence(targetIndex) {
             const data = COLLECTION_DATA[targetIndex];
-            
-            // UPGRADE: Safety check. If you haven't added wildcard videos yet, this ignores the circle gesture safely!
-            if (!data || data.count === 0) return; 
+            if (!data) return;
+
+            // WILDCARD SAFETY CATCH: Safely ignore the gesture if there are 0 videos assigned to this target
+            if (data.count === 0) {
+                console.log(`Wildcard ignored for ${data.name}: count is currently 0`);
+                return;
+            }
 
             isWildcardSequenceRunning = true; 
 
@@ -968,25 +982,20 @@
                 }).catch(e => console.log("Unlock handled gracefully"));
             }
 
+            // CYBERPUNK WILDCARD START LOGIC
             if (data.l3AnimType === 'slideLeft') {
                 l3Plane.setAttribute('animation', 'property: position; to: -3.5 0 -1.60; dur: 800; easing: easeInOutQuad');
                 setTimeout(() => finalizeWildcard(targetIndex), 800);
             } 
+            // CONTAINMENT WILDCARD START LOGIC
             else if (data.designLogic === 'containment') {
                 const l6Plane = document.querySelector(`#target-${targetIndex} .l6`);
                 l6Plane.setAttribute('evil-glitch', 'active: false');
                 l6Plane.setAttribute('opacity', '1'); 
                 
                 clearTimeout(inactivityTimer); 
-                
-                // Dynamically stop whichever ambient loop belongs to this design
-                if (data.sfxAmbient) {
-                    const ambientSfx = document.getElementById(data.sfxAmbient);
-                    if (ambientSfx) {
-                        ambientSfx.pause();
-                        ambientSfx.currentTime = 0;
-                    }
-                }
+                if (sfxEvilLaugh) { sfxEvilLaugh.pause(); sfxEvilLaugh.currentTime = 0; }
+                if (sfxLiminalWhisper) { sfxLiminalWhisper.pause(); sfxLiminalWhisper.currentTime = 0; }
                 
                 if (videoPool[targetIndex]) {
                     videoPool[targetIndex].pause();
